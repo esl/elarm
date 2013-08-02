@@ -1,10 +1,10 @@
 %%%-------------------------------------------------------------------
-%%% @author Anders Nygren <>
-%%% @copyright (C) 2013, Anders Nygren
+%%% @author Anders Nygren <anders.nygren@erlang-solutions.com>
+%%% @copyright (C) 2013, Erlang Solution Ltd.
 %%% @doc
 %%% Top level supervisor for elarm.
 %%% @end
-%%% Created : 30 Jul 2013 by Anders Nygren <>
+%%% Created : 30 Jul 2013 by Anders Nygren <anders.nygren@erlang-solutions.com>
 %%%-------------------------------------------------------------------
 -module(elarm_sup).
 

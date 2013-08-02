@@ -1,10 +1,10 @@
 %%%-------------------------------------------------------------------
-%%% @author Anders Nygren <>
-%%% @copyright (C) 2013, Anders Nygren
+%%% @author Anders Nygren <anders.nygren@erlang-solutions.com>
+%%% @copyright (C) 2013, Erlang Solution Ltd.
 %%% @doc
-%%%
+%%% Event subscription plugin.
 %%% @end
-%%% Created : 31 Jul 2013 by Anders Nygren <>
+%%% Created : 31 Jul 2013 by Anders Nygren <anders.nygren@erlang-solutions.com>
 %%%-------------------------------------------------------------------
 -module(elarm_event).
 

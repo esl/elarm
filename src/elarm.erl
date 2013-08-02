@@ -3,8 +3,9 @@
 %%% @copyright (C) 2013, Erlang Solution Ltd.
 %%% @doc
 %%% Alarm Management Application.
+%%% This module implements the public API of the elarm application.
 %%% @end
-%%% Created : 26 Jul 2013 by Anders Nygren <>
+%%% Created : 26 Jul 2013 by Anders Nygren <erlang-solutions.com>
 %%%-------------------------------------------------------------------
 -module(elarm).
 
