@@ -36,13 +36,13 @@
 init(Opts) ->
     {ok, #evt_state{}}.
 
--spec subscribe(pid(), sub_filter(), #evt_state{}) -> {ok,reference()}.  %% MFA filter=[all,[alarm_type], [src], summary]
+-spec subscribe(pid()|atom(), sub_filter(), #evt_state{}) -> {{ok,reference()},#evt_state{}}.  %% MFA filter=[all,[alarm_type], [src], summary]
 subscribe(Pid, Filter, #evt_state{ subs = Subs } = State)->
     Ref = make_ref(),
     {{ok,Ref}, State#evt_state{ subs = [{Ref, Pid, Filter}|Subs]}}.
 
 %% Cancel subscription.
--spec unsubscribe(reference(), #evt_state{}) -> ok.
+-spec unsubscribe(reference(), #evt_state{}) -> {ok,#evt_state{}}.
 unsubscribe(Ref, #evt_state{ subs = Subs } = State)->
     NewSubs = [Sub || {Ref1, _, _}=Sub <- Subs, Ref/=Ref1],
     {ok, State#evt_state{ subs = NewSubs }}.

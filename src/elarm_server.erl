@@ -60,12 +60,12 @@ start_link(Name, Opts) when is_list(Opts) ->
     gen_server:start_link({local, Name}, ?MODULE, Opts, []).
 
 %% Raise an alarm.
--spec raise(pid(), alarm_id(), alarm_src(), additional_information()) -> ok.
+-spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) -> ok.
 raise(Pid, Id, Src, AddInfo) ->
     gen_server:call(Pid, {raise, Id, Src, AddInfo}).
 
 %% Clear an alarm
--spec clear(pid(), alarm_id(), alarm_src()) -> ok.
+-spec clear(pid()|atom(), alarm_id(), alarm_src()) -> ok.
 clear(Pid, Id, Src) ->
     gen_server:call(Pid, {clear, Id, Src}).
 
@@ -79,12 +79,12 @@ clear(Pid, Id, Src) ->
 %% - cleared alarm, {cleared_alarm, Ref, event_id()}
 %% - comment added, {comment_added, Ref, event_id, comment()}
 %% that match the Filter.
--spec subscribe(pid(), sub_filter()) -> reference().  %% MFA filter=[all,[alarm_type], [src], summary]
+-spec subscribe(pid()|atom(), sub_filter()) -> reference().  %% MFA filter=[all,[alarm_type], [src], summary]
 subscribe(Pid, Filter) ->
     gen_server:call(Pid, {subscribe, self(), Filter}).
 
 %% Cancel subscription.
--spec unsubscribe(pid(), reference()) -> ok.
+-spec unsubscribe(pid()|atom(), reference()) -> ok.
 unsubscribe(Pid, Ref) ->
     gen_server:call(Pid, {unsubscribe, Ref}).
 
@@ -93,17 +93,17 @@ unsubscribe(Pid, Ref) ->
 %% everytime the alarm status summary matching the Filter changes
 
 %% Acknowledge one or more alarms.
--spec acknowledge(pid(), event_id() | [event_id()], user_id()) -> ok | {error, term()}.
+-spec acknowledge(pid()|atom(), event_id() | [event_id()], user_id()) -> ok | {error, term()}.
 acknowledge(Pid, EventId, UserId) ->
     gen_server:call(Pid, {acknowledge, EventId, UserId}).
 
 %% Add a comment to an alarm
--spec add_comment(pid(), event_id(), binary(), user_id()) -> ok | {error, term()}.
+-spec add_comment(pid()|atom(), event_id(), binary(), user_id()) -> ok | {error, term()}.
 add_comment(Pid, EventId, Text, UserId) ->
     gen_server:call(Pid, {add_comment, EventId, Text, UserId}).
 
 %% Manually clear an alarm
--spec manual_clear(pid(), event_id(), user_id()) -> ok | {error, term()}.
+-spec manual_clear(pid()|atom(), event_id(), user_id()) -> ok | {error, term()}.
 manual_clear(Pid, EventId, UserId) ->
     gen_server:call(Pid, {manual_clear, EventId, UserId}).
 
@@ -113,7 +113,7 @@ get_alarms(Pid) ->
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm log
 
--spec read_log(pid(), term()) -> [alarm()].
+-spec read_log(pid()|atom(), term()) -> [alarm()].
 read_log(Pid, Filter) ->
     gen_server:call(Pid, {read_log, Filter}).
 

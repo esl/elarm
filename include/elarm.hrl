@@ -13,7 +13,7 @@
 -type alarm_type()             :: communication | qos | processing | equipment | environment.
 -type alarm_src()              :: term().
 -type timestamp()              :: calendar:datetime().
--type event_id()               :: binary(). %% This must be globally unique
+-type event_id()               :: tuple(). %% FIXME binary(). %% This must be globally unique
 -type severity()               :: critical | major | minor | warning | indeterminate | cleared.
 -type probable_cause()         :: binary().
 -type proposed_repair_action() :: binary().

@@ -73,7 +73,7 @@ clear(AlarmId, Src, #al_state{ alarmlist = AList, event_ids = EventIds } = State
     true = ets:delete(AList, Key),
     {ok, State}.
 
--spec get_alarm(event_id(), #al_state{}) -> {ok, alarm(), #al_state{}} | {error, not_active, #al_state{}}.
+-spec get_alarm(event_id(), #al_state{}) -> {{ok, alarm()}, #al_state{}} | {{error, not_active}, #al_state{}}.
 get_alarm(EventId, #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
     Result = case ets:lookup(EventIds, EventId) of
                  [{EventId, Key}] ->
@@ -117,7 +117,8 @@ al_test_() ->
 just_started() ->
     {ok,State} = init([]),
     ?assertEqual({{ok,[]}, State}, get_alarms(State)),
-    ?assertEqual({{error, not_active},State}, get_alarm(dummy, State)),
+    EvtId = erlang:now(),
+    ?assertEqual({{error, not_active},State}, get_alarm(EvtId, State)),
     ?assertEqual({{error, not_active},State}, get_alarm(full, disk_1, State)).
 
 add_alarm() ->

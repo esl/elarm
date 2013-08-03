@@ -62,12 +62,12 @@ start_server(Name, Opts) ->
     elarm_sup:start_server(Name, Opts).
 
 %% Stop an Alarm Manager server.
--spec stop_server() -> {ok, pid()} | {error, term()}.
+-spec stop_server() -> ok | {error, term()}.
 stop_server() ->
     stop_server(elarm_sup).
 
 %% Stop an Alarm Manager server.
--spec stop_server(atom()) -> {ok, pid()} | {error, term()}.
+-spec stop_server(atom()) -> ok | {error, term()}.
 stop_server(Name) ->
     elarm_sup:stop_server(Name).
 
@@ -123,7 +123,7 @@ unsubscribe(Ref) when is_reference(Ref)->
     unsubscribe(elarm_server, Ref).
 
 %% Cancel subscription.
--spec unsubscribe(pid(), reference()) -> ok.
+-spec unsubscribe(pid()|atom(), reference()) -> ok.
 unsubscribe(Pid, Ref) when is_reference(Ref)->
     elarm_server:unsubscribe(Pid, Ref).
 
@@ -146,7 +146,7 @@ add_comment(EventId, Text, UserId) ->
     add_comment(elarm_server, EventId, Text, UserId).
 
 %% Add a comment to an alarm
--spec add_comment(pid(), event_id(), text(), user_id()) -> ok | {error, term()}.
+-spec add_comment(pid()|atom(), event_id(), text(), user_id()) -> ok | {error, term()}.
 add_comment(Pid, EventId, Text, UserId) ->
     elarm_server:add_comment(Pid, EventId, Text, UserId).
 
@@ -167,7 +167,7 @@ manual_clear(Pid, EventId, UserId) ->
 read_log(Filter) ->
     read_log(elarm_server, Filter).
 
--spec read_log(pid(), term()) -> [alarm()].
+-spec read_log(pid()|atom(), term()) -> [alarm()].
 read_log(Pid, Filter) ->
     elarm_server:read_log(Pid, Filter).
 
