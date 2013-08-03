@@ -11,8 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0,
-         start_link/1,
+-export([start_link/2,
          raise/4,
          clear/3,
          subscribe/2,
@@ -57,11 +56,8 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link() ->
-    start_link([]).
-
-start_link(Opts) ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, Opts, []).
+start_link(Name, Opts) when is_list(Opts) ->
+    gen_server:start_link({local, Name}, ?MODULE, Opts, []).
 
 %% Raise an alarm.
 -spec raise(pid(), alarm_id(), alarm_src(), additional_information()) -> ok.

@@ -12,7 +12,7 @@
 
 %% API
 -export([start_link/0,
-         start_server/1,
+         start_server/2,
          stop_server/1,
          which_servers/0]).
 
@@ -36,8 +36,8 @@ start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %% Start a new alarm manager.
-start_server(Name) ->
-    Spec = alarm_manager_spec(Name),
+start_server(Name, Opts) ->
+    Spec = alarm_manager_spec(Name, Opts),
     supervisor:start_child(?SERVER, Spec).
 
 %% Stop an alarm manager
@@ -71,12 +71,16 @@ init([]) ->
     MaxSecondsBetweenRestarts = 3600,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
-
-    {ok, {SupFlags, []}}.
+    Servers = mk_servers_specs(),
+    {ok, {SupFlags, Servers}}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-alarm_manager_spec(Name) ->
-    {Name, {elarm_server, start_link, []},
+mk_servers_specs() ->
+    {ok,Servers} = application:get_env(elarm, servers),
+    [alarm_manager_spec(Name, Opts) || {Name, Opts} <- Servers].
+
+alarm_manager_spec(Name, Opts) ->
+    {Name, {elarm_server, start_link, [Name, Opts]},
      permanent, 2000, worker, [elarm_server]}.

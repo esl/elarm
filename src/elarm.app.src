@@ -5,7 +5,9 @@
   {registered, []},
   {applications, [kernel, stdlib]},
   {mod, {elarm_app, []}},
-  {env, [%% Callback module for alarm configuration data
+  {env, [%% List of servers to start [{name, Opts}]
+         {servers, [{elarm_server,[]}]},
+         %% Callback module for alarm configuration data
          {alarmlist_cb, elarm_alarmlist},
          {config_cb, elarm_config},
          {log_cb, elarm_log},
