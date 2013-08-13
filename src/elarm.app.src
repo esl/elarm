@@ -1,0 +1,36 @@
+{application, elarm,
+ [
+  {description, "Alarm Manager"},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {applications, [kernel, stdlib]},
+  {mod, {elarm_app, []}},
+  {env, [%% List of servers to start [{name, Opts}]
+         {servers, [{elarm_server,[]}]},
+         %% Callback module for alarm configuration data
+         {alarmlist_cb, elarm_alarmlist},
+         {config_cb, elarm_config},
+         {log_cb, elarm_log},
+         {event_cb, elarm_event},
+         %% Default alarm parameters
+         {def_alarm_mapping, 
+          [{severity, indeterminate},
+           {probable_cause, <<>>},
+           {proposed_repair_action, <<>>},
+           {description, <<>>},
+           {additional_information, undefined},
+           {correlated_events, []},
+           {comments, []},         
+           {trend, undefined},
+           {threshold, undefined},
+           %% Is manual clearing of the alarm allowed
+           {manual_clear_allowed, true},
+           %% Does the alarm need operator acknowledgement
+           {no_ack_required, false},
+           %% Shall the alarm be logged
+           {log, true},
+           %% Shall the alarm be ignored
+           {ignore, false}]}
+        ]}
+ ]
+}.
