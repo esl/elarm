@@ -17,7 +17,8 @@
          add_comment/5,
          clear/4,
          manual_clear/3,
-         handle_down/2]).
+         handle_down/2,
+         filter_alarms/2]).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("elarm/include/elarm.hrl").
@@ -85,10 +86,17 @@ clear(AlarmId, Src, EventId, #evt_state{ subs = Subs } =  State) ->
 manual_clear(EventId, UserId, #evt_state{ subs = Subs } =  State) ->
     {ok, State}.
 
+%% Remove a subscriber when he has terminated
 handle_down({'DOWN', _MRef, _Type, Pid, _Info},
             #evt_state{ subs = Subs } = EvtState) ->
     NewSubs = remove_subscriber(Pid, Subs),
     EvtState#evt_state{ subs = NewSubs }.
+
+%% Filter a list of alarms.
+filter_alarms(Alarms, Filter) ->
+    lists:filter(fun (A) ->
+                        test_filter(A, Filter) == match
+                 end, Alarms).
 
 %%%===================================================================
 %%% Internal functions

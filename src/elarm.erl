@@ -109,22 +109,22 @@ clear(Ref, Id, Src) ->
 %% - cleared alarm, {elarm, Ref, {alarm_id(), alarm_src(), event_id()}}
 %% - comment added, {elarm, Ref, {alarm_id(), alarm_src(), event_id, comment()}}
 %% that match the Filter.
--spec subscribe(sub_filter()) -> reference().  %% MFA filter=[all,[alarm_type], [src], summary]
-subscribe(Filter) when is_list(Filter)->
+-spec subscribe(sub_filter()) -> {ok, reference(), [alarm()]}.  %% MFA filter=[all,[alarm_type], [src], summary]
+subscribe(Filter) when is_list(Filter) ->
     subscribe(elarm_server, Filter).
 
--spec subscribe(pid()|atom(), sub_filter()) -> reference().  %% MFA filter=[all,[alarm_type], [src], summary]
-subscribe(Pid, Filter) when is_list(Filter)->
+-spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.  %% MFA filter=[all,[alarm_type], [src], summary]
+subscribe(Pid, Filter) when is_list(Filter) ->
     elarm_server:subscribe(Pid, Filter).
 
 %% Cancel subscription.
 -spec unsubscribe(reference()) -> ok.
-unsubscribe(Ref) when is_reference(Ref)->
+unsubscribe(Ref) when is_reference(Ref) ->
     unsubscribe(elarm_server, Ref).
 
 %% Cancel subscription.
 -spec unsubscribe(pid()|atom(), reference()) -> ok.
-unsubscribe(Pid, Ref) when is_reference(Ref)->
+unsubscribe(Pid, Ref) when is_reference(Ref) ->
     elarm_server:unsubscribe(Pid, Ref).
 
 %% Start a subscription of alarm status summary matching Filter

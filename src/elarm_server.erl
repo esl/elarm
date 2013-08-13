@@ -79,7 +79,7 @@ clear(Pid, Id, Src) ->
 %% - cleared alarm, {cleared_alarm, Ref, event_id()}
 %% - comment added, {comment_added, Ref, event_id, comment()}
 %% that match the Filter.
--spec subscribe(pid()|atom(), sub_filter()) -> reference().  %% MFA filter=[all,[alarm_type], [src], summary]
+-spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.  %% MFA filter=[all,[alarm_type], [src], summary]
 subscribe(Pid, Filter) ->
     gen_server:call(Pid, {subscribe, self(), Filter}).
 
@@ -471,9 +471,14 @@ handle_get_alarms(#state{ alarmlist_cb = AlCB,
 
 handle_subscribe(Pid, Filter, 
                  #state{ event_cb = EvtCB,
-                         event_state = EvtState } = State) ->
-    {Result, NewEvtState} = EvtCB:subscribe(Pid, Filter, EvtState),
-    {Result, State#state{event_state = NewEvtState}}.
+                         event_state = EvtState,
+			 alarmlist_cb = AlCB,
+			 alarmlist_state = AlState } = State) ->
+    {{ok,Ref}, NewEvtState} = EvtCB:subscribe(Pid, Filter, EvtState),
+    {{ok,Alarms}, NewAlState} = AlCB:get_alarms(AlState),
+    Filtered = EvtCB:filter_alarms(Alarms, Filter),
+    {{ok, Ref, Filtered}, State#state{ alarmlist_state = NewAlState,
+				       event_state = NewEvtState }}.
     
 handle_unsubscribe(Ref, #state{ event_cb = EvtCB,
                                 event_state = EvtState } = State) ->
