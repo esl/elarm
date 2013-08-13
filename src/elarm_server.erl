@@ -242,6 +242,10 @@ handle_cast(_Msg, State) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_info({'DOWN', _MRef, _Type, _Object, _Info} = Down,
+	    #state{ event_cb = EvtCB, event_state = EvtState }=State) ->
+    NewEvtState = EvtCB:handle_down(Down, EvtState),
+    {noreply, State#state{ event_state = NewEvtState }};
 handle_info(_Info, State) ->
     {noreply, State}.
 

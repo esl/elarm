@@ -16,7 +16,8 @@
          acknowledge/5,
          add_comment/5,
          clear/4,
-         manual_clear/3]).
+         manual_clear/3,
+         handle_down/2]).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("elarm/include/elarm.hrl").
@@ -33,18 +34,25 @@
 %% @end
 %%--------------------------------------------------------------------
 -spec init(proplists:proplist()) -> {ok, #evt_state{}} | {error, term()}.
-init(Opts) ->
+init(_Opts) ->
     {ok, #evt_state{}}.
 
 -spec subscribe(pid()|atom(), sub_filter(), #evt_state{}) -> {{ok,reference()},#evt_state{}}.  %% MFA filter=[all,[alarm_type], [src], summary]
 subscribe(Pid, Filter, #evt_state{ subs = Subs } = State)->
+    MRef = monitor(process, Pid),
     Ref = make_ref(),
-    {{ok,Ref}, State#evt_state{ subs = [{Ref, Pid, Filter}|Subs]}}.
+    {{ok,Ref}, State#evt_state{ subs = add_subscriber(Ref, MRef, Pid, Filter, Subs)}}.
 
 %% Cancel subscription.
 -spec unsubscribe(reference(), #evt_state{}) -> {ok,#evt_state{}}.
 unsubscribe(Ref, #evt_state{ subs = Subs } = State)->
-    NewSubs = [Sub || {Ref1, _, _}=Sub <- Subs, Ref/=Ref1],
+    NewSubs = case find_subscriber(Ref, Subs) of
+                  {ok, {Ref, MRef, _,_}} ->
+                      demonitor(MRef, [flush]),
+                      remove_subscriber(Ref, Subs);
+                  {error, not_subscribed} ->
+                      Subs
+              end,
     {ok, State#evt_state{ subs = NewSubs }}.
 
 -spec new_alarm(alarm(), #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
@@ -77,13 +85,34 @@ clear(AlarmId, Src, EventId, #evt_state{ subs = Subs } =  State) ->
 manual_clear(EventId, UserId, #evt_state{ subs = Subs } =  State) ->
     {ok, State}.
 
+handle_down({'DOWN', _MRef, _Type, Pid, _Info},
+            #evt_state{ subs = Subs } = EvtState) ->
+    NewSubs = remove_subscriber(Pid, Subs),
+    EvtState#evt_state{ subs = NewSubs }.
+
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+add_subscriber(Ref, MRef, Pid, Filter, Subs) ->
+    [{Ref, MRef, Pid, Filter} | Subs].
+
+find_subscriber(Ref, Subs) ->
+    case lists:keysearch(Ref, 1, Subs) of
+        {value, S} ->
+            {ok,S};
+        false ->
+            {error, not_subscribed}
+    end.
+
+remove_subscriber(Ref, Subs) when is_reference(Ref) ->
+    [Sub || {Ref1, _, _, _}=Sub <- Subs, Ref/=Ref1];
+remove_subscriber(Pid, Subs) when is_pid(Pid) ->
+    [Sub || {_, _, Pid1, _}=Sub <- Subs, Pid/=Pid1].
+
 send_events(Event, Subs) ->
     [maybe_send_event(Event, Sub) || Sub <- Subs].
 
-maybe_send_event(Event, {Ref, Pid, Filter}) ->
+maybe_send_event(Event, {Ref, _MRef, Pid, Filter}) ->
     case test_filter(Event, Filter) of
         match ->
             Pid!{elarm, Ref, Event};
