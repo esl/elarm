@@ -53,9 +53,9 @@
 %% @doc
 %% Starts the server
 %%
-%% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
+-spec start_link(atom(), proplists:proplist()) -> {ok, Pid} | ignore | {error, Error}.
 start_link(Name, Opts) when is_list(Opts) ->
     gen_server:start_link({local, Name}, ?MODULE, Opts, []).
 
