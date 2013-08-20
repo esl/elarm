@@ -1,20 +1,18 @@
 %%%-------------------------------------------------------------------
-%%% @author Anders Nygren <anders.nygren@erlang-solutions.com>
-%%% @copyright (C) 2013, Erlang Solution Ltd.
+%%% @author Anders Nygren <>
+%%% @copyright (C) 2013, Anders Nygren
 %%% @doc
-%%% Top level supervisor for elarm.
+%%%
 %%% @end
-%%% Created : 30 Jul 2013 by Anders Nygren <anders.nygren@erlang-solutions.com>
+%%% Created : 16 Aug 2013 by Anders Nygren <>
 %%%-------------------------------------------------------------------
--module(elarm_sup).
+-module(elarm_summary_sup).
 
 -behaviour(supervisor).
 
 %% API
--export([start_link/0,
-         start_server/2,
-         stop_server/1,
-         which_servers/0]).
+-export([start_link/1,
+         start_child/2]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -32,22 +30,13 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+start_link(Name) ->
+    supervisor:start_link(?MODULE, [Name]).
 
-%% Start a new alarm manager.
-start_server(Name, Opts) ->
-    Spec = alarm_manager_spec(Name, Opts),
-    supervisor:start_child(?SERVER, Spec).
+start_child(AlarmServer, Filter) ->
+    Super = gproc:lookup_local_name({elarm_summary_sup, AlarmServer}),
+    supervisor:start_child(Super, [self(), AlarmServer, Filter]).
 
-%% Stop an alarm manager
-stop_server(Name) ->
-    ok = supervisor:terminate_child(?SERVER, Name),
-    ok = supervisor:delete_child(?SERVER, Name).
-
-%% Get a list of all servers running
-which_servers() ->
-    [{Name, Pid} || {Name, Pid, _, _} <- supervisor:which_children(?SERVER)].
 %%%===================================================================
 %%% Supervisor callbacks
 %%%===================================================================
@@ -65,22 +54,21 @@ which_servers() ->
 %%                     {error, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([]) ->
-    RestartStrategy = one_for_one,
+init([Name]) ->
+    gproc:add_local_name({elarm_summary_sup, Name}),
+    RestartStrategy = simple_one_for_one,
     MaxRestarts = 1000,
     MaxSecondsBetweenRestarts = 3600,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
-    Servers = mk_servers_specs(),
-    {ok, {SupFlags, Servers}}.
+
+    Restart = transient,
+    Shutdown = 2000,
+    Type = worker,
+    Child = {summary, {elarm_summary, start_link, []},
+             Restart, Shutdown, Type, [elarm_summary]},
+    {ok, {SupFlags, [Child]}}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-mk_servers_specs() ->
-    {ok,Servers} = application:get_env(elarm, servers),
-    [alarm_manager_spec(Name, Opts) || {Name, Opts} <- Servers].
-
-alarm_manager_spec(Name, Opts) ->
-    {Name, {elarm_man_sup, start_link, [Name, Opts]},
-     permanent, 2000, supervisor, [elarm_man_sup]}.

@@ -1,20 +1,17 @@
 %%%-------------------------------------------------------------------
-%%% @author Anders Nygren <anders.nygren@erlang-solutions.com>
-%%% @copyright (C) 2013, Erlang Solution Ltd.
+%%% @author Anders Nygren <>
+%%% @copyright (C) 2013, Anders Nygren
 %%% @doc
-%%% Top level supervisor for elarm.
+%%%
 %%% @end
-%%% Created : 30 Jul 2013 by Anders Nygren <anders.nygren@erlang-solutions.com>
+%%% Created : 20 Aug 2013 by Anders Nygren <>
 %%%-------------------------------------------------------------------
--module(elarm_sup).
+-module(elarm_man_sup).
 
 -behaviour(supervisor).
 
 %% API
--export([start_link/0,
-         start_server/2,
-         stop_server/1,
-         which_servers/0]).
+-export([start_link/2]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -32,22 +29,9 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+start_link(Name, Opts) ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, [Name, Opts]).
 
-%% Start a new alarm manager.
-start_server(Name, Opts) ->
-    Spec = alarm_manager_spec(Name, Opts),
-    supervisor:start_child(?SERVER, Spec).
-
-%% Stop an alarm manager
-stop_server(Name) ->
-    ok = supervisor:terminate_child(?SERVER, Name),
-    ok = supervisor:delete_child(?SERVER, Name).
-
-%% Get a list of all servers running
-which_servers() ->
-    [{Name, Pid} || {Name, Pid, _, _} <- supervisor:which_children(?SERVER)].
 %%%===================================================================
 %%% Supervisor callbacks
 %%%===================================================================
@@ -65,22 +49,22 @@ which_servers() ->
 %%                     {error, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([]) ->
+init([Name, Opts]) ->
     RestartStrategy = one_for_one,
     MaxRestarts = 1000,
     MaxSecondsBetweenRestarts = 3600,
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
-    Servers = mk_servers_specs(),
-    {ok, {SupFlags, Servers}}.
+
+    {ok, {SupFlags, [alarm_manager_spec(Name, Opts), summary_sup_spec(Name)]}}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-mk_servers_specs() ->
-    {ok,Servers} = application:get_env(elarm, servers),
-    [alarm_manager_spec(Name, Opts) || {Name, Opts} <- Servers].
-
 alarm_manager_spec(Name, Opts) ->
-    {Name, {elarm_man_sup, start_link, [Name, Opts]},
-     permanent, 2000, supervisor, [elarm_man_sup]}.
+    {Name, {elarm_server, start_link, [Name, Opts]},
+     permanent, 2000, worker, [elarm_server]}.
+
+summary_sup_spec(Name) ->
+    {summary_sup, {elarm_summary_sup, start_link, [Name]},
+     permanent, 2000, supervisor, [elarm_summary_sup]}.
