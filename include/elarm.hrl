@@ -27,7 +27,7 @@
 -type comments()               :: [comment()].
 -type trend()                  :: undefined | more_severe | less_severe | unchanged.
 -type alarm_state()            :: new | acknowledged.
--type sub_filter_type()        :: all | event_type | src | summary.
+-type sub_filter_type()        :: all | {type,alarm_type()} | {src, alarm_src()} | summary.
 -type sub_filter()             :: [sub_filter_type()].
 -type log_filter()             :: term(). %% Should be a match spec or similar
 -record(ack_info, {user        :: user_id(),
@@ -55,7 +55,7 @@
           correlated_events = []                  :: [event_id()],
           comments = []                           :: comments(),
           trend                                   :: trend(),
-          threshold                               :: threshold(),
+          threshold                               :: undefined | threshold(),
           state = new                             :: alarm_state(),
           ack_info                                :: ack_info()
          }).

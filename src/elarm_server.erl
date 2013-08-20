@@ -34,7 +34,7 @@
 
 -include_lib("elarm/include/elarm.hrl").
 
--define(SERVER, ?MODULE). 
+-define(SERVER, ?MODULE).
 
 -record(state, {alarmlist_cb,
                 alarmlist_state,
@@ -53,9 +53,9 @@
 %% @doc
 %% Starts the server
 %%
-%% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
+-spec start_link(atom(), proplists:proplist()) -> {ok, pid()} | ignore | {error, term()}.
 start_link(Name, Opts) when is_list(Opts) ->
     gen_server:start_link({local, Name}, ?MODULE, Opts, []).
 
@@ -72,14 +72,8 @@ clear(Pid, Id, Src) ->
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm status
 
-%% Start subscription on alarm events matching Filter. all|event_type|orig
-%% The subscriber will receive a message for every
-%% - new alarm, {new_alarm, Ref, alarm()}
-%% - ackmowledged alarm, {acknowledged, Ref, event_id()}
-%% - cleared alarm, {cleared_alarm, Ref, event_id()}
-%% - comment added, {comment_added, Ref, event_id, comment()}
-%% that match the Filter.
--spec subscribe(pid()|atom(), sub_filter()) -> reference().  %% MFA filter=[all,[alarm_type], [src], summary]
+%% Start subscription on alarm events matching Filter.
+-spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.
 subscribe(Pid, Filter) ->
     gen_server:call(Pid, {subscribe, self(), Filter}).
 
@@ -242,6 +236,10 @@ handle_cast(_Msg, State) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_info({'DOWN', _MRef, _Type, _Object, _Info} = Down,
+	    #state{ event_cb = EvtCB, event_state = EvtState }=State) ->
+    NewEvtState = EvtCB:handle_down(Down, EvtState),
+    {noreply, State#state{ event_state = NewEvtState }};
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -278,7 +276,7 @@ init_alarm_list(Opts) ->
 
 init_config(Opts) ->
     init_plugin(config_cb, get_opts(config, Opts)).
-    
+
 init_log(Opts) ->
     init_plugin(log_cb, get_opts(log, Opts)).
 
@@ -294,32 +292,40 @@ init_plugin(Var, Opts) ->
     {CB, State}.
 
 handle_raise(AlarmId, Src, AddInfo,
-             #state{ alarmlist_cb = AlCB,
-                     alarmlist_state = AlState,
-                     config_cb = CfgCB,
-                     config_state = CfgState,
-                     event_cb = EvtCB,
-                     event_state = EvtState,
-                     log_cb = LogCB,
-                     log_state = LogState } = State) ->
+             #state{ config_cb = CfgCB,
+                     config_state = CfgState } = State) ->
     case get_alarm_config(AlarmId, CfgCB, CfgState) of
         {{ok, #alarm_config{ ignore = false } = Cfg}, NewCfgState} ->
-            Alarm = create_alarm(AlarmId, Src, AddInfo, Cfg),
-            {ok, NewLogState} = log_alarm(Alarm, LogCB, LogState),
-            {ok, NewAlState} = update_alarmlist(Alarm, AlCB, AlState),
-            {ok, NewEvtState} = send_new_events(Alarm, EvtCB, EvtState),
-            {ok, State#state{ alarmlist_state = NewAlState,
-                              config_state = NewCfgState,
-                              event_state = NewEvtState,
-                              log_state = NewLogState }};
-        {ok, #alarm_config{ ignore = true }, NewCfgState} -> 
+            NewState = process_raise(AlarmId, Src, AddInfo, Cfg, State),
+            {ok, NewState#state{ config_state = NewCfgState }};
+        {ok, #alarm_config{ ignore = true }, NewCfgState} ->
             {ok, State#state{ config_state = NewCfgState }}
     end.
 
 get_alarm_config(AlarmId, CfgCB, CfgState) ->
     CfgCB:get_mapping(AlarmId, CfgState).
 
-create_alarm(AlarmId, Src, AddInfo, Cfg) ->
+process_raise(AlarmId, Src, AddInfo, Cfg,
+              #state{ alarmlist_cb = AlCB,
+                      alarmlist_state = AlState,
+                      event_cb = EvtCB,
+                      event_state = EvtState,
+                      log_cb = LogCB,
+                      log_state = LogState} = State) ->
+    Alarm = create_alarm_rec(AlarmId, Src, AddInfo, Cfg),
+    case is_duplicate(Alarm, State) of
+        {false, NewState} ->
+            {ok, NewLogState} = log_alarm(Alarm, LogCB, LogState),
+            {ok, NewAlState} = update_alarmlist(Alarm, AlCB, AlState),
+            {ok, NewEvtState} = send_new_events(Alarm, EvtCB, EvtState),
+            NewState#state{ alarmlist_state = NewAlState,
+                            event_state = NewEvtState,
+                            log_state = NewLogState };
+        {true, NewState} ->
+            NewState
+    end.
+
+create_alarm_rec(AlarmId, Src, AddInfo, Cfg) ->
     #alarm{
        alarm_id =AlarmId,
        alarm_type = get_alarm_type(Cfg),
@@ -351,6 +357,15 @@ get_proposed_repair_action(#alarm_config{ proposed_repair_action = Action }) ->
 get_description(#alarm_config{ description = Description }) ->
     Description.
 
+is_duplicate(#alarm{ alarm_id = AlarmId, src = AlarmSrc },
+             #state{ alarmlist_cb = AlCB, alarmlist_state = AlState } = State) ->
+    case AlCB:get_alarm(AlarmId, AlarmSrc, AlState) of
+        {{ok, #alarm{}}, NewAlState} ->
+            {true, State#state{ alarmlist_state = NewAlState }};
+        {{error, not_active}, NewAlState} ->
+            {false, State#state{ alarmlist_state = NewAlState }}
+    end.
+
 log_alarm(Alarm, LogCB, LogState) ->
     LogCB:new_alarm(Alarm, LogState).
 
@@ -359,7 +374,7 @@ update_alarmlist(Alarm, AlCB, AlState) ->
 
 send_new_events(Alarm, EventCB, EventState) ->
     EventCB:new_alarm(Alarm, EventState).
-     
+
 handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
                                    alarmlist_state = AlState,
                                    event_cb = EvtCB,
@@ -379,7 +394,7 @@ handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_clear(AlarmId, Src, EventId, LogCB, LogState) ->    
+log_clear(AlarmId, Src, EventId, LogCB, LogState) ->
     LogCB:clear(AlarmId, Src, EventId, LogState).
 
 alarmlist_clear(AlarmId, Src, AlCB, AlState) ->
@@ -423,7 +438,7 @@ alarmlist_acknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
 send_acknowlegde_events(AlarmId, Src, EventId, AckInfo, EvtCB, EvtState) ->
     EvtCB:acknowledge(AlarmId, Src, EventId, AckInfo, EvtState).
 
-handle_comment(EventId, Text, UserId, 
+handle_comment(EventId, Text, UserId,
                #state{ alarmlist_cb = AlCB,
                        alarmlist_state = AlState,
                        event_cb = EvtCB,
@@ -456,26 +471,31 @@ alarmlist_comment(AlarmId, Src, Comment, AlCB, AlState) ->
 
 send_comment_events(AlarmId, Src, Comment, EventId, EvtCB, EvtState) ->
     EvtCB:add_comment(AlarmId, Src, Comment, EventId, EvtState).
-    
+
 handle_manual_clear(EventId, UserId, State) ->
     {ok, State}.
-    
+
 handle_get_alarms(#state{ alarmlist_cb = AlCB,
                           alarmlist_state = AlState} = State) ->
     {Result, NewAlState} = AlCB:get_alarms(AlState),
     {Result, State#state{ alarmlist_state = NewAlState}}.
 
-handle_subscribe(Pid, Filter, 
+handle_subscribe(Pid, Filter,
                  #state{ event_cb = EvtCB,
-                         event_state = EvtState } = State) ->
-    {Result, NewEvtState} = EvtCB:subscribe(Pid, Filter, EvtState),
-    {Result, State#state{event_state = NewEvtState}}.
-    
+                         event_state = EvtState,
+			 alarmlist_cb = AlCB,
+			 alarmlist_state = AlState } = State) ->
+    {{ok,Ref}, NewEvtState} = EvtCB:subscribe(Pid, Filter, EvtState),
+    {{ok,Alarms}, NewAlState} = AlCB:get_alarms(AlState),
+    Filtered = EvtCB:filter_alarms(Alarms, Filter),
+    {{ok, Ref, Filtered}, State#state{ alarmlist_state = NewAlState,
+				       event_state = NewEvtState }}.
+
 handle_unsubscribe(Ref, #state{ event_cb = EvtCB,
                                 event_state = EvtState } = State) ->
     {Result, NewEvtState} = EvtCB:unsubscribe(Ref, EvtState),
     {Result, State#state{event_state = NewEvtState}}.
-    
+
 handle_read_log(Filter, State) ->
     {ok, State}.
 
