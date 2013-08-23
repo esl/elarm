@@ -181,7 +181,7 @@ subscribe(Filter) when is_list(Filter) ->
 %% The messages have the following format.
 %% <dl>
 %% <dt>new alarm</dt><dd> {elarm, Ref, alarm()}</dd>
-%% <dt>ackmowledged alarm</dt><dd>{elarm, Ref, {ack, alarm_id(), alarm_src(), event_id(), ack_info()}}</dd>
+%% <dt>acknowledged alarm</dt><dd>{elarm, Ref, {ack, alarm_id(), alarm_src(), event_id(), ack_info()}}</dd>
 %% <dt>cleared alarm</dt><dd>{elarm, Ref, {clear, alarm_id(), alarm_src(), event_id()}}</dd>
 %% <dt>comment added</dt><dd>{elarm, Ref, {add_comment, alarm_id(), alarm_src(), event_id, comment()}}</dd>
 %% </dl>
