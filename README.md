@@ -9,7 +9,7 @@ Elarm is an Alarm Manager for Erlang. It is designed to be easy to include in an
 
 Alarms and Events are often mixed up, but there are some important differences.
 
-An Event is stateless, it just says "Something happened", e.g. "filed to open file" or "invoice created", and that is all. Logging tools like lager do event logging.
+An Event is stateless, it just says "Something happened", e.g. "failed to open file" or "invoice created", and that is all. Logging tools like lager do event logging.
 
 An Alarm on the other hand has state, it is an indicator that something is wrong in the system. Once an alarm is raised it remains active until the error condition connected to the alarm no longer applies. When the error condition is removed the alarm is cleared.
 
@@ -19,11 +19,11 @@ An Alarm on the other hand has state, it is an indicator that something is wrong
 
 Elarm keeps a list of all currently active alarms. It is possible for a Manager application to subscribe to all changes in the alarm list.
 
-A user can acknowledge alarm, that is to tell elarm that he is aware of the alarm. It is also possible to add comments to an alarm. Finally it is possible to manually clear an alarm. Normally an alarm is cleared by the application that raised the alarm, but in some cases that is not done, e.g. if the alarms are received as SNMP traps fromanother system.
+A user can acknowledge alarm, that is to tell elarm that he is aware of the alarm. It is also possible to add comments to an alarm. Finally it is possible to manually clear an alarm. Normally an alarm is cleared by the application that raised the alarm, but in some cases that is not done, e.g. if the alarms are received as SNMP traps from another system.
 
 ### Alarm Log ###
 
-All changes to an alarm is logged in an alarm log.
+All changes to an alarm are logged in an alarm log.
 
 ### Alarm Configuration ###
 
@@ -100,7 +100,7 @@ To start a subscription use elarm:summary_subscription(Server, Filter).
 
 Filter is the same as for alarm list subscriptions. Every time the summary changes a message will be received.
 
-The format of the messages are:
+The format of the messages is:
 
 * {elarm, Ref, #alarm_summary{}}
 
