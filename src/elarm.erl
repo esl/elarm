@@ -77,12 +77,12 @@ start_server(Name, Opts) ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Stop an Alarm Manager server.
-%% @equiv stop_server(elarm_sup)
+%% @equiv stop_server(elarm_server)
 %% @end
 %%--------------------------------------------------------------------
 -spec stop_server() -> ok | {error, term()}.
 stop_server() ->
-    stop_server(elarm_sup).
+    stop_server(elarm_server).
 
 %%--------------------------------------------------------------------
 %% @doc
