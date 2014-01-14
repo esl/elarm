@@ -1,8 +1,8 @@
 get_deps:
-	rebar get_deps
+	rebar get-deps
 
 upd_deps:
-	rebar upd_deps
+	rebar upd-deps
 
 compile:
 	rebar compile
