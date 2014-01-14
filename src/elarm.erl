@@ -370,7 +370,7 @@ get_unconfigured() ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Get unconfigured alarms.
-%% Get a list of all alarms that have been raise for which no
+%% Get a list of all alarms that have been raised for which no
 %% configuration data exists.
 %% @end
 %%--------------------------------------------------------------------
