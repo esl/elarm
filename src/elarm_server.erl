@@ -55,12 +55,14 @@
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec start_link(atom(), proplists:proplist()) -> {ok, pid()} | ignore | {error, term()}.
+-spec start_link(atom(), proplists:proplist()) ->
+          {ok, pid()} | ignore | {error, term()}.
 start_link(Name, Opts) when is_list(Opts) ->
     gen_server:start_link({local, Name}, ?MODULE, Opts, []).
 
 %% Raise an alarm.
--spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) -> ok.
+-spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) ->
+          ok.
 raise(Pid, Id, Src, AddInfo) ->
     gen_server:call(Pid, {raise, Id, Src, AddInfo}).
 
@@ -87,12 +89,14 @@ unsubscribe(Pid, Ref) ->
 %% everytime the alarm status summary matching the Filter changes
 
 %% Acknowledge one or more alarms.
--spec acknowledge(pid()|atom(), event_id() | [event_id()], user_id()) -> ok | {error, term()}.
+-spec acknowledge(pid()|atom(), event_id() | [event_id()], user_id()) ->
+          ok | {error, term()}.
 acknowledge(Pid, EventId, UserId) ->
     gen_server:call(Pid, {acknowledge, EventId, UserId}).
 
 %% Add a comment to an alarm
--spec add_comment(pid()|atom(), event_id(), binary(), user_id()) -> ok | {error, term()}.
+-spec add_comment(pid()|atom(), event_id(), binary(), user_id()) ->
+          ok | {error, term()}.
 add_comment(Pid, EventId, Text, UserId) ->
     gen_server:call(Pid, {add_comment, EventId, Text, UserId}).
 

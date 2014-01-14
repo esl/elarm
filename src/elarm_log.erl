@@ -36,27 +36,34 @@ init(Opts) ->
 new_alarm(Alarm, State) ->
     {ok,State}.
 
--spec acknowledge(alarm_id(), alarm_src(), event_id(), ack_info(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
+-spec acknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
+                  #log_state{}) ->
+          {ok, #log_state{}} | {error, term()}.
 acknowledge(AlarmId, Src, EventId, AckInfo, State) ->
     {ok, State}.
 
 %% Add a comment to an alarm
--spec add_comment(alarm_id(), alarm_src(), event_id(), comment(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
-add_comment(AlarmId, Src, EventId, Comment, State) -> 
+-spec add_comment(alarm_id(), alarm_src(), event_id(), comment(),
+                  #log_state{}) ->
+          {ok, #log_state{}} | {error, term()}.
+add_comment(AlarmId, Src, EventId, Comment, State) ->
     {ok, State}.
 
 %% Automatically clear an alarm
--spec clear(alarm_id(), alarm_src(), event_id(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
+-spec clear(alarm_id(), alarm_src(), event_id(), #log_state{}) ->
+          {ok, #log_state{}} | {error, term()}.
 clear(AlarmId, Src, EventId, State) ->
     {ok, State}.
 
 %% Manually clear an alarm
--spec clear(alarm_id(), alarm_src(), event_id(), user_id(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
+-spec clear(alarm_id(), alarm_src(), event_id(), user_id(), #log_state{}) ->
+          {ok, #log_state{}} | {error, term()}.
 clear(AlarmId, Src, EventId, UserId, State) ->
     {ok, State}.
 
 %% search the log
--spec search(log_filter(), #log_state{}) -> {ok, [alarm()], #log_state{}} | {error, term()}.
+-spec search(log_filter(), #log_state{}) -> {ok, [alarm()], #log_state{}} |
+                                            {error, term()}.
 search(Filter, State) ->
     {ok, [], State}.
 

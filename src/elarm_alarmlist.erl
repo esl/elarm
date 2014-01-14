@@ -47,7 +47,8 @@ new_alarm(#alarm{ alarm_id = AlId, src = Src, event_id = EventId } = Alarm,
     true = ets:insert(EventIds, {EventId, Key}),
     {ok, State}.
 
--spec acknowledge(alarm_id(), alarm_src(), ack_info(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
+-spec acknowledge(alarm_id(), alarm_src(), ack_info(), #al_state{}) ->
+          {ok, #al_state{}} | {error, term()}.
 acknowledge(AlarmId, Src, AckInfo,
             #al_state{ alarmlist = AList } = State) ->
     [{Key, Alarm}] = ets:lookup(AList, {AlarmId, Src}),
@@ -56,7 +57,8 @@ acknowledge(AlarmId, Src, AckInfo,
     {ok, State}.
 
 %% Add a comment to an alarm
--spec add_comment(alarm_id(), alarm_src(), comment(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
+-spec add_comment(alarm_id(), alarm_src(), comment(), #al_state{}) ->
+          {ok, #al_state{}} | {error, term()}.
 add_comment(AlarmId, Src, Comment, #al_state{ alarmlist = AList } = State) -> 
     Key = {AlarmId,Src},
     [{_Key, #alarm{ comments = Cs } = Alarm}] = ets:lookup(AList, Key),
@@ -64,16 +66,20 @@ add_comment(AlarmId, Src, Comment, #al_state{ alarmlist = AList } = State) ->
     {ok, State}.
 
 %% Clear an alarm
--spec clear(alarm_id(), alarm_src(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
-clear(AlarmId, Src, #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
+-spec clear(alarm_id(), alarm_src(), #al_state{}) ->
+          {ok, #al_state{}} | {error, term()}.
+clear(AlarmId, Src,
+      #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
     Key = {AlarmId, Src},
     [{_,#alarm{ event_id = EventId }}] = ets:lookup(AList, Key),
     true = ets:delete(EventIds, EventId),
     true = ets:delete(AList, Key),
     {ok, State}.
 
--spec get_alarm(event_id(), #al_state{}) -> {{ok, alarm()}, #al_state{}} | {{error, not_active}, #al_state{}}.
-get_alarm(EventId, #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
+-spec get_alarm(event_id(), #al_state{}) ->
+          {{ok, alarm()}, #al_state{}} | {{error, not_active}, #al_state{}}.
+get_alarm(EventId,
+          #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
     Result = case ets:lookup(EventIds, EventId) of
                  [{EventId, Key}] ->
                      [{Key,Alarm}] = ets:lookup(AList, Key),
@@ -83,7 +89,8 @@ get_alarm(EventId, #al_state{ alarmlist = AList, event_ids = EventIds } = State)
              end,
     {Result, State}.
 
--spec get_alarm(alarm_id(), alarm_src(), #al_state{}) -> {{ok, alarm()}, #al_state{}} | {error, not_active, #al_state{}}.
+-spec get_alarm(alarm_id(), alarm_src(), #al_state{}) ->
+          {{ok, alarm()}, #al_state{}} | {error, not_active, #al_state{}}.
 get_alarm(AlarmId, Src,
           #al_state{ alarmlist = AList } = State) ->
     Result = case ets:lookup(AList, {AlarmId,Src}) of
@@ -94,19 +101,20 @@ get_alarm(AlarmId, Src,
              end,
     {Result, State}.
 
--spec get_alarms(#al_state{}) -> {{ok, [alarm()]}, #al_state{}} | {error, term(), #al_state{}}.
+-spec get_alarms(#al_state{}) ->
+          {{ok, [alarm()]}, #al_state{}} | {error, term(), #al_state{}}.
 get_alarms(#al_state{ alarmlist = AList } = State) ->
     Alarms = [Alarm || {_Key,Alarm} <- ets:tab2list(AList)],
     {{ok, Alarms}, State}.
-              
+
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
 
-
 %%%===================================================================
 %%% EUnit Tests
 %%%===================================================================
+
 al_test_() ->
     {setup, fun setup/0, fun teardown/1,
      [{"start_up", fun just_started/0},
@@ -140,8 +148,8 @@ add_alarm() ->
     ?assertEqual({{ok, CommentedAlarm}, State}, get_alarm(full, disk1, State)),
     ?assertEqual({ok, State}, clear(full, disk1, State)),
     ?assertEqual({{error, not_active}, State}, get_alarm(full, disk1, State)).
-    
-    
+
+
 setup() ->
     application:load(elarm).
 
