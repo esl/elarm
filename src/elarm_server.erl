@@ -84,10 +84,6 @@ subscribe(Pid, Filter) ->
 unsubscribe(Pid, Ref) ->
     gen_server:call(Pid, {unsubscribe, Ref}).
 
-%% Start a subscription of alarm status summary matching Filter
-%% The subscriber will receive a message {Ref, #alarm_summary{}}
-%% everytime the alarm status summary matching the Filter changes
-
 %% Acknowledge one or more alarms.
 -spec acknowledge(pid()|atom(), event_id() | [event_id()], user_id()) ->
           ok | {error, term()}.

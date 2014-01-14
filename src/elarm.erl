@@ -190,7 +190,7 @@ subscribe(Filter) when is_list(Filter) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.  %% MFA filter=[all,[alarm_type], [src], summary]
+-spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.
 subscribe(Pid, Filter) when is_list(Filter) ->
     elarm_server:subscribe(Pid, Filter).
 
