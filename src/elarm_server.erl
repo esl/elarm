@@ -302,7 +302,7 @@ handle_raise(AlarmId, Src, AddInfo,
         {{ok, #alarm_config{ ignore = false } = Cfg}, NewCfgState} ->
             NewState = process_raise(AlarmId, Src, AddInfo, Cfg, State),
             {ok, NewState#state{ config_state = NewCfgState }};
-        {ok, #alarm_config{ ignore = true }, NewCfgState} ->
+        {{ok, #alarm_config{ ignore = true }}, NewCfgState} ->
             {ok, State#state{ config_state = NewCfgState }}
     end.
 
