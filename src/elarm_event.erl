@@ -91,7 +91,8 @@ clear(AlarmId, Src, EventId, #evt_state{ subs = Subs } =  State) ->
 %% Manually clear an alarm
 -spec manual_clear(event_id(), user_id(), #evt_state{}) ->
           {ok, #evt_state{}} | {error, term()}.
-manual_clear(EventId, UserId, #evt_state{ subs = Subs } =  State) ->
+manual_clear(_EventId, _UserId, #evt_state{ subs = _Subs } =  State) ->
+    %% FIXME Implement this function.
     {ok, State}.
 
 %% Remove a subscriber when he has terminated

@@ -205,7 +205,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 get_severity(AlarmId, AlarmSrc, Alarms) ->
-    {Severity, State} = get_alarm(AlarmId, AlarmSrc, Alarms).
+    {_Severity, _State} = get_alarm(AlarmId, AlarmSrc, Alarms).
 
 new_alarms() ->
     dict:new().
@@ -223,9 +223,9 @@ delete_alarm(Id, Src, Alarms) ->
     dict:erase({Id, Src}, Alarms).
 
 process_alarmlist(AlarmList) ->
-    {Summary, Alarms} = lists:foldr(fun new_alarm/2,
-                                    {#summary{}, new_alarms()},
-                                    AlarmList).
+    {_Summary, _Alarms} = lists:foldr(fun new_alarm/2,
+                                      {#summary{}, new_alarms()},
+                                      AlarmList).
 
 new_alarm(Alarm, {Summary, Alarms}) ->
     new_alarm(Alarm, Summary, Alarms).

@@ -472,7 +472,8 @@ alarmlist_comment(AlarmId, Src, Comment, AlCB, AlState) ->
 send_comment_events(AlarmId, Src, Comment, EventId, EvtCB, EvtState) ->
     EvtCB:add_comment(AlarmId, Src, Comment, EventId, EvtState).
 
-handle_manual_clear(EventId, UserId, State) ->
+handle_manual_clear(_EventId, _UserId, State) ->
+    %% FIXME Implement this function.
     {ok, State}.
 
 handle_get_alarms(#state{ alarmlist_cb = AlCB,
@@ -496,7 +497,8 @@ handle_unsubscribe(Ref, #state{ event_cb = EvtCB,
     {Result, NewEvtState} = EvtCB:unsubscribe(Ref, EvtState),
     {Result, State#state{event_state = NewEvtState}}.
 
-handle_read_log(Filter, State) ->
+handle_read_log(_Filter, State) ->
+    %% FIXME Implement this function.
     {ok, State}.
 
 handle_get_configured(#state{ config_cb = CfgCB,
