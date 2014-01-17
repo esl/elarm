@@ -3,6 +3,17 @@
 %%% @copyright (C) 2013, Erlang Solution Ltd.
 %%% @doc
 %%% Alarm status summary server.
+%%%
+%%% Alarm Summary gives a summary of the presence or absence of unacknowledged
+%%% and acknowledged alarms of the various severities. This is useful for e.g.
+%%% show the status on maps or other overview user interfaces.
+%%%
+%%% Each process that wants to know about changes in this summary can subscribe
+%%% to getting alarm summaries by calling `elarm:summary_subscription(Server,
+%%% Filter)`. This will start an `elarm_summary` process (under an
+%%% `elarm_summary_sup` supervisor), which subscribes to alarms, and notifies
+%%% its subscribers about the updated summary when it receives an alarm.
+%%%
 %%% @end
 %%% Created : 14 Aug 2013 by Anders Nygren <anders.nygren@erlang-solutions.com>
 %%%-------------------------------------------------------------------
@@ -37,11 +48,15 @@
 
 -record(state, {
           client,
-          ref,
-          alarmlist_ref,
-          mref,
+          ref,                     % The client is subscribed to the summary
+                                   % server with this reference.
+          alarmlist_ref,           % The summary server is subscribed to the
+                                   % elarm server with this reference.
+          mref,                    % The summary server monitors the client with
+                                   % this reference.
           status  = #alarm_summary{},
-          alarms  = new_alarms(),
+          alarms  = new_alarms(),  % Cache for the alarms in which the summary
+                                   % server is interested.
           summary = #summary{}
          }).
 
