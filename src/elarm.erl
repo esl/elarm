@@ -57,7 +57,8 @@
 %% Start an Alarm Manager server.
 %% @end
 %%--------------------------------------------------------------------
--spec start_server(atom()|proplists:proplist()) -> {ok, pid()} | {error, term()}.
+-spec start_server(atom()|proplists:proplist()) -> {ok, pid()} |
+                                                   {error, term()}.
 start_server(Name) when is_atom(Name)->
     start_server(Name, []);
 start_server(Opts) when is_list(Opts) ->
@@ -68,19 +69,20 @@ start_server(Opts) when is_list(Opts) ->
 %% Start an Alarm Manager server. The server registers the Name.
 %% @end
 %%--------------------------------------------------------------------
--spec start_server(atom(), proplists:proplist()) -> {ok, pid()} | {error, term()}.
+-spec start_server(atom(), proplists:proplist()) -> {ok, pid()} |
+                                                    {error, term()}.
 start_server(Name, Opts) ->
     elarm_sup:start_server(Name, Opts).
 
 %%--------------------------------------------------------------------
 %% @doc
 %% Stop an Alarm Manager server.
-%% @equiv stop_server(elarm_sup)
+%% @equiv stop_server(elarm_server)
 %% @end
 %%--------------------------------------------------------------------
 -spec stop_server() -> ok | {error, term()}.
 stop_server() ->
-    stop_server(elarm_sup).
+    stop_server(elarm_server).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -188,7 +190,7 @@ subscribe(Filter) when is_list(Filter) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.  %% MFA filter=[all,[alarm_type], [src], summary]
+-spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.
 subscribe(Pid, Filter) when is_list(Filter) ->
     elarm_server:subscribe(Pid, Filter).
 
@@ -220,7 +222,6 @@ unsubscribe(Pid, Ref) when is_reference(Ref) ->
 %% @equiv subscribe_summary(elarm_server, Filter)
 %% @end
 %%--------------------------------------------------------------------
-
 -spec subscribe_summary(sub_filter()) -> {ok, reference()}.
 subscribe_summary(Filter) ->
     subscribe_summary(elarm_server, Filter).
@@ -254,7 +255,8 @@ acknowledge(EventId, UserId) ->
 %% Acknowledge one or more alarms.
 %% @end
 %%--------------------------------------------------------------------
--spec acknowledge(pid() | atom(), event_id() | [event_id()], user_id()) -> ok | {error, term()}.
+-spec acknowledge(pid() | atom(), event_id() | [event_id()], user_id()) ->
+          ok | {error, term()}.
 acknowledge(Pid, EventId, UserId) ->
     elarm_server:acknowledge(Pid, EventId, UserId).
 
@@ -273,7 +275,8 @@ add_comment(EventId, Text, UserId) ->
 %% Add a comment to an alarm
 %% @end
 %%--------------------------------------------------------------------
--spec add_comment(pid()|atom(), event_id(), text(), user_id()) -> ok | {error, term()}.
+-spec add_comment(pid()|atom(), event_id(), text(), user_id()) ->
+          ok | {error, term()}.
 add_comment(Pid, EventId, Text, UserId) ->
     elarm_server:add_comment(Pid, EventId, Text, UserId).
 
@@ -349,7 +352,8 @@ get_configured() ->
 %% Get all currently configured alarms.
 %% @end
 %%--------------------------------------------------------------------
--spec get_configured(pid()|atom()) -> {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
+-spec get_configured(pid()|atom()) -> {ok, [{alarm_id(),alarm_config()}]} |
+                                      {error, term()}.
 get_configured(Pid) ->
     elarm_server:get_configured(Pid).
 
@@ -366,7 +370,7 @@ get_unconfigured() ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Get unconfigured alarms.
-%% Get a list of all alarms that have been raise for which no
+%% Get a list of all alarms that have been raised for which no
 %% configuration data exists.
 %% @end
 %%--------------------------------------------------------------------
@@ -380,7 +384,8 @@ get_unconfigured(Pid) ->
 %% @equiv get_all_configuration(elarm_server)
 %% @end
 %%--------------------------------------------------------------------
--spec get_all_configuration() -> {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
+-spec get_all_configuration() -> {ok, [{alarm_id(),alarm_config()}]} |
+                                 {error, term()}.
 get_all_configuration() ->
     get_all_configuration(elarm_server).
 
@@ -391,7 +396,8 @@ get_all_configuration() ->
 %% unconfigured alarms the default configuration is returned.
 %% @end
 %%--------------------------------------------------------------------
--spec get_all_configuration(pid()|atom()) -> {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
+-spec get_all_configuration(pid()|atom()) ->
+          {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
 get_all_configuration(Pid) ->
     elarm_server:get_all_configuration(Pid).
 
@@ -410,7 +416,8 @@ get_default_configuration() ->
 %% Get default configuration.
 %% @end
 %%--------------------------------------------------------------------
--spec get_default_configuration(pid()|atom()) -> {ok, alarm_config()} | {error, term()}.
+-spec get_default_configuration(pid()|atom()) -> {ok, alarm_config()} |
+                                                 {error, term()}.
 get_default_configuration(Pid) ->
     elarm_server:get_default_configuration(Pid).
 
@@ -429,7 +436,8 @@ add_configuration(AlarmId, Config) ->
 %% Add configuration data for an alarm_id.
 %% @end
 %%--------------------------------------------------------------------
--spec add_configuration(pid()|atom(), alarm_id(), alarm_config()) -> ok | {error, term()}.
+-spec add_configuration(pid()|atom(), alarm_id(), alarm_config()) ->
+          ok | {error, term()}.
 add_configuration(Pid, AlarmId, Config) ->
     elarm_server:add_configuration(Pid, AlarmId, Config).
 

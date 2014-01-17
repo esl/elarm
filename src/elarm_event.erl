@@ -37,11 +37,13 @@
 init(_Opts) ->
     {ok, #evt_state{}}.
 
--spec subscribe(pid()|atom(), sub_filter(), #evt_state{}) -> {{ok,reference()},#evt_state{}}.  %% MFA filter=[all,[alarm_type], [src], summary]
+-spec subscribe(pid()|atom(), sub_filter(), #evt_state{}) ->
+          {{ok,reference()},#evt_state{}}.
 subscribe(Pid, Filter, #evt_state{ subs = Subs } = State)->
     MRef = monitor(process, Pid),
     Ref = make_ref(),
-    {{ok,Ref}, State#evt_state{ subs = add_subscriber(Ref, MRef, Pid, Filter, Subs)}}.
+    NewSubs = add_subscriber(Ref, MRef, Pid, Filter, Subs),
+    {{ok, Ref}, State#evt_state{ subs = NewSubs }}.
 
 %% Cancel subscription.
 -spec unsubscribe(reference(), #evt_state{}) -> {ok,#evt_state{}}.
@@ -60,15 +62,21 @@ new_alarm(Alarm, #evt_state{ subs = Subs } = State) ->
     send_events(Alarm, Subs),
     {ok, State}.
 
--spec acknowledge(alarm_id(), alarm_src(), event_id(), ack_info(), #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
-acknowledge(AlarmId, Src, EventId, AckInfo, #evt_state{ subs = Subs } =  State) ->
+-spec acknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
+                  #evt_state{}) ->
+          {ok, #evt_state{}} | {error, term()}.
+acknowledge(AlarmId, Src, EventId, AckInfo,
+            #evt_state{ subs = Subs } =  State) ->
     Event = {ack, AlarmId, Src, EventId, AckInfo},
     send_events(Event, Subs),
     {ok, State}.
 
 %% Add a comment to an alarm
--spec add_comment(alarm_id(), alarm_src(), event_id(), comment(), #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
-add_comment(AlarmId, Src, EventId, Comment, #evt_state{ subs = Subs } =  State) -> 
+-spec add_comment(alarm_id(), alarm_src(), event_id(), comment(),
+                  #evt_state{}) ->
+          {ok, #evt_state{}} | {error, term()}.
+add_comment(AlarmId, Src, EventId, Comment,
+            #evt_state{ subs = Subs } =  State) ->
     Event = {add_comment, AlarmId, Src, EventId, Comment},
     send_events(Event, Subs),
     {ok, State}.
@@ -81,8 +89,10 @@ clear(AlarmId, Src, EventId, #evt_state{ subs = Subs } =  State) ->
     {ok,State}.
 
 %% Manually clear an alarm
--spec manual_clear(event_id(), user_id(), #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
-manual_clear(EventId, UserId, #evt_state{ subs = Subs } =  State) ->
+-spec manual_clear(event_id(), user_id(), #evt_state{}) ->
+          {ok, #evt_state{}} | {error, term()}.
+manual_clear(_EventId, _UserId, #evt_state{ subs = _Subs } =  State) ->
+    %% FIXME Implement this function.
     {ok, State}.
 
 %% Remove a subscriber when he has terminated
@@ -100,13 +110,14 @@ filter_alarms(Alarms, Filter) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
 add_subscriber(Ref, MRef, Pid, Filter, Subs) ->
     [{Ref, MRef, Pid, Filter} | Subs].
 
 find_subscriber(Ref, Subs) ->
     case lists:keysearch(Ref, 1, Subs) of
         {value, S} ->
-            {ok,S};
+            {ok, S};
         false ->
             {error, not_subscribed}
     end.
@@ -122,7 +133,7 @@ send_events(Event, Subs) ->
 maybe_send_event(Event, {Ref, _MRef, Pid, Filter}) ->
     case test_filter(Event, Filter) of
         match ->
-            Pid!{elarm, Ref, Event};
+            Pid ! {elarm, Ref, Event};
         nomatch ->
             ok
     end.
@@ -143,7 +154,6 @@ test_filter(Event,[_|Filter]) ->
     test_filter(Event, Filter);
 test_filter(_Event, []) ->
     nomatch.
-
 
 %%%===================================================================
 %%% EUnit Tests

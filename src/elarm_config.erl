@@ -98,9 +98,11 @@ add_configuration(AlarmId, Config,
     true = ets:insert(CfgTab, {AlarmId, Config}),
     true = ets:delete(MissingTab, AlarmId),
     {ok, State}.
+
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
 create_record(DefaultMap) ->
     #alarm_config{
        alarm_type = proplists:get_value(alarm_type, DefaultMap),
@@ -116,7 +118,6 @@ create_record(DefaultMap) ->
        log = proplists:get_value(log, DefaultMap),
        ignore = proplists:get_value(ignore, DefaultMap)
       }.
-
 
 %%%===================================================================
 %%% EUnit Tests
@@ -134,7 +135,8 @@ just_started() ->
     ?assertEqual({{ok,[]}, State}, get_unconfigured(State)),
     ?assertEqual({{ok,[]}, State}, get_configured(State)),
     ?assertEqual({{ok,[]}, State}, get_all_configuration(State)),
-    ?assertMatch({{ok,M}, #config_state{default_map=M}}, get_default_configuration(State)).
+    ?assertMatch({{ok,M}, #config_state{default_map=M}},
+                 get_default_configuration(State)).
 
 unmapped_alarm() ->
     {ok,State} = init([]),
