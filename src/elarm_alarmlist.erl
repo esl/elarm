@@ -14,6 +14,7 @@
          acknowledge/4,
          add_comment/4,
          clear/3,
+         manual_clear/2,
          get_alarm/2,
          get_alarm/3,
          get_alarms/1]).
@@ -69,12 +70,25 @@ add_comment(AlarmId, Src, Comment, #al_state{ alarmlist = AList } = State) ->
 -spec clear(alarm_id(), alarm_src(), #al_state{}) ->
           {ok, #al_state{}} | {error, term()}.
 clear(AlarmId, Src,
-      #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
+      #al_state{ alarmlist = AList } = State) ->
     Key = {AlarmId, Src},
-    [{_,#alarm{ event_id = EventId }}] = ets:lookup(AList, Key),
-    true = ets:delete(EventIds, EventId),
-    true = ets:delete(AList, Key),
+    [{Key, Alarm}] = ets:lookup(AList, Key),
+    true = ets:insert(AList, {Key, Alarm#alarm{ state = cleared }}),
     {ok, State}.
+
+%% Delete an alarm
+-spec manual_clear(event_id(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
+manual_clear(EventId,
+      #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
+    case ets:lookup(EventIds, EventId) of
+        [{EventId, Key}] ->
+            [{Key, _Alarm}] = ets:lookup(AList, Key),
+            true = ets:delete(EventIds, EventId),
+            true = ets:delete(AList, Key),
+            {ok, State};
+        [] ->
+            {error, not_active}
+    end.
 
 -spec get_alarm(event_id(), #al_state{}) ->
           {{ok, alarm()}, #al_state{}} | {{error, not_active}, #al_state{}}.
@@ -146,7 +160,12 @@ add_alarm() ->
     CommentedAlarm = AckedAlarm#alarm{comments = [Comment]},
     ?assertEqual({ok,State}, add_comment(full, disk1, Comment, State)),
     ?assertEqual({{ok, CommentedAlarm}, State}, get_alarm(full, disk1, State)),
+
+    ClearedAlarm = CommentedAlarm#alarm{state = cleared},
     ?assertEqual({ok, State}, clear(full, disk1, State)),
+    ?assertEqual({{ok, ClearedAlarm}, State}, get_alarm(full, disk1, State)),
+
+    ?assertEqual({ok, State}, manual_clear({1375,396050,79296}, State)),
     ?assertEqual({{error, not_active}, State}, get_alarm(full, disk1, State)).
 
 
