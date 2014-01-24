@@ -3,7 +3,7 @@
   {description, "Alarm Manager"},
   {vsn, "0.0.1"},
   {registered, []},
-  {applications, [kernel, stdlib]},
+  {applications, [kernel, stdlib, gproc]},
   {mod, {elarm_app, []}},
   {env, [%% List of servers to start [{name, Opts}]
          {servers, [{elarm_server,[]}]},
