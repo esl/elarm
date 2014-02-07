@@ -26,7 +26,7 @@
 -type comment()                :: #comment{}.
 -type comments()               :: [comment()].
 -type trend()                  :: undefined | more_severe | less_severe | unchanged.
--type alarm_state()            :: new | acknowledged | cleared.
+-type alarm_state()            :: new | acknowledged.
 -type sub_filter_type()        :: all | {type,alarm_type()} | {src, alarm_src()} | summary.
 -type sub_filter()             :: [sub_filter_type()].
 -type log_filter()             :: term(). %% Should be a match spec or similar
