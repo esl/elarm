@@ -4,6 +4,9 @@
 %%% Created : 26 Jul 2013 by Anders Nygren <erlang-solutions.com>
 %%%-------------------------------------------------------------------
 
+-ifndef(ELARM_HRL).
+-define(ELARM_HRL, 1).
+
 -type user_id()                :: binary().
 %% -type type()                   :: atom().
 %% -type id()                     :: atom() | integer() | string() | binary().
@@ -93,3 +96,5 @@
          }).
 
 -type alarm_config()                      :: #alarm_config{}.
+
+-endif.
