@@ -77,13 +77,12 @@ clear(AlarmId, Src,
     true = ets:delete(AList, Key),
     {ok, State}.
 
-%% Delete an alarm
+%% Manually clear an alarm
 -spec manual_clear(event_id(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
 manual_clear(EventId,
       #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
     case ets:lookup(EventIds, EventId) of
         [{EventId, Key}] ->
-            [{Key, _Alarm}] = ets:lookup(AList, Key),
             true = ets:delete(EventIds, EventId),
             true = ets:delete(AList, Key),
             {ok, State};
