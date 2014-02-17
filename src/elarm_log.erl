@@ -13,10 +13,10 @@
 %% API
 -export([init/1,
          new_alarm/2,
-         acknowledge/5,
-         unacknowledge/5,
-         add_comment/5,
-         clear/4, clear/5,
+         acknowledge/3,
+         unacknowledge/3,
+         add_comment/3,
+         clear/2, clear/3,
          search/2]).
 
 -include_lib("eunit/include/eunit.hrl").
@@ -40,35 +40,31 @@ init(_Opts) ->
 new_alarm(_Alarm, State) ->
     {ok,State}.
 
--spec acknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
-                  #log_state{}) ->
+-spec acknowledge(alarm(), ack_info(), #log_state{}) ->
           {ok, #log_state{}} | {error, term()}.
-acknowledge(_AlarmId, _Src, _EventId, _AckInfo, State) ->
+acknowledge(_Alarm, _AckInfo, State) ->
     {ok, State}.
 
--spec unacknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
-                    #log_state{}) ->
+-spec unacknowledge(alarm(), ack_info(), #log_state{}) ->
           {ok, #log_state{}} | {error, term()}.
-unacknowledge(_AlarmId, _Src, _EventId, _AckInfo, State) ->
+unacknowledge(_Alarm, _AckInfo, State) ->
     {ok, State}.
 
 %% Add a comment to an alarm
--spec add_comment(alarm_id(), alarm_src(), event_id(), comment(),
-                  #log_state{}) ->
+-spec add_comment(alarm(), comment(), #log_state{}) ->
           {ok, #log_state{}} | {error, term()}.
-add_comment(_AlarmId, _Src, _EventId, _Comment, State) ->
+add_comment(_Alarm, _Comment, State) ->
     {ok, State}.
 
 %% Automatically clear an alarm
--spec clear(alarm_id(), alarm_src(), event_id(), #log_state{}) ->
-          {ok, #log_state{}} | {error, term()}.
-clear(_AlarmId, _Src, _EventId, State) ->
+-spec clear(alarm(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
+clear(_Alarm, State) ->
     {ok, State}.
 
 %% Manually clear an alarm
--spec clear(alarm_id(), alarm_src(), event_id(), user_id(), #log_state{}) ->
+-spec clear(alarm(), user_id(), #log_state{}) ->
           {ok, #log_state{}} | {error, term()}.
-clear(_AlarmId, _Src, _EventId, _UserId, State) ->
+clear(_Alarm, _UserId, State) ->
     {ok, State}.
 
 %% search the log
