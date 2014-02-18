@@ -14,6 +14,7 @@
 -export([init/1,
          new_alarm/2,
          acknowledge/5,
+         unacknowledge/5,
          add_comment/5,
          clear/4, clear/5,
          search/2]).
@@ -43,6 +44,12 @@ new_alarm(_Alarm, State) ->
                   #log_state{}) ->
           {ok, #log_state{}} | {error, term()}.
 acknowledge(_AlarmId, _Src, _EventId, _AckInfo, State) ->
+    {ok, State}.
+
+-spec unacknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
+                    #log_state{}) ->
+          {ok, #log_state{}} | {error, term()}.
+unacknowledge(_AlarmId, _Src, _EventId, _AckInfo, State) ->
     {ok, State}.
 
 %% Add a comment to an alarm
