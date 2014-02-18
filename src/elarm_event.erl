@@ -14,6 +14,7 @@
          unsubscribe/2,
          new_alarm/2,
          acknowledge/5,
+         unacknowledge/5,
          add_comment/5,
          clear/4,
          manual_clear/3,
@@ -68,6 +69,15 @@ new_alarm(Alarm, #evt_state{ subs = Subs } = State) ->
 acknowledge(AlarmId, Src, EventId, AckInfo,
             #evt_state{ subs = Subs } =  State) ->
     Event = {ack, AlarmId, Src, EventId, AckInfo},
+    send_events(Event, Subs),
+    {ok, State}.
+
+-spec unacknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
+                  #evt_state{}) ->
+          {ok, #evt_state{}} | {error, term()}.
+unacknowledge(AlarmId, Src, EventId, AckInfo,
+            #evt_state{ subs = Subs } =  State) ->
+    Event = {unack, AlarmId, Src, EventId, AckInfo},
     send_events(Event, Subs),
     {ok, State}.
 

@@ -17,6 +17,7 @@
          subscribe/2,
          unsubscribe/2,
          acknowledge/3,
+         unacknowledge/3,
          add_comment/4,
          manual_clear/3,
          get_alarms/1,
@@ -89,6 +90,12 @@ unsubscribe(Pid, Ref) ->
           ok | {error, term()}.
 acknowledge(Pid, EventId, UserId) ->
     gen_server:call(Pid, {acknowledge, EventId, UserId}).
+
+%% Unacknowledge one or more alarms.
+-spec unacknowledge(pid()|atom(), event_id() | [event_id()], user_id()) ->
+          ok | {error, term()}.
+unacknowledge(Pid, EventId, UserId) ->
+    gen_server:call(Pid, {unacknowledge, EventId, UserId}).
 
 %% Add a comment to an alarm
 -spec add_comment(pid()|atom(), event_id(), binary(), user_id()) ->
@@ -183,6 +190,9 @@ handle_call({unsubscribe, Ref}, _From, State) ->
     {reply, Reply, NewState};
 handle_call({acknowledge, EventId, UserId}, _From, State) ->
     {Reply, NewState} = handle_acknowledge(EventId, UserId, State),
+    {reply, Reply, NewState};
+handle_call({unacknowledge, EventId, UserId}, _From, State) ->
+    {Reply, NewState} = handle_unacknowledge(EventId, UserId, State),
     {reply, Reply, NewState};
 handle_call({add_comment, EventId, Text, UserId}, _From, State) ->
     {Reply, NewState} = handle_comment(EventId, Text, UserId, State),
@@ -438,6 +448,43 @@ alarmlist_acknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
 
 send_acknowlegde_events(AlarmId, Src, EventId, AckInfo, EvtCB, EvtState) ->
     EvtCB:acknowledge(AlarmId, Src, EventId, AckInfo, EvtState).
+
+handle_unacknowledge(EventId, UserId,
+                   #state{ alarmlist_cb = AlCB,
+                           alarmlist_state = AlState,
+                           event_cb = EvtCB,
+                           event_state = EvtState,
+                           log_cb = LogCB,
+                           log_state = LogState } = State) ->
+    case AlCB:get_alarm(EventId, AlState) of
+        {{ok, #alarm{ alarm_id = AlarmId, src = Src, state = acknowledged }},
+         AlState1} ->
+            AckInfo = #ack_info{user = UserId,
+                                time = timestamp()},
+            {ok, NewLogState} = log_unacknowledge(AlarmId, Src, EventId,
+                                                  AckInfo, LogCB, LogState),
+            {ok, NewAlState} = alarmlist_unacknowledge(AlarmId, Src, AckInfo,
+                                                       AlCB, AlState1),
+            {ok, NewEvtState} = send_unacknowlegde_events(AlarmId, Src, AckInfo,
+                                                        EventId, EvtCB,
+                                                        EvtState),
+            {ok, State#state{ alarmlist_state = NewAlState,
+                              event_state = NewEvtState,
+                              log_state = NewLogState }};
+        {{ok, #alarm{ state = new }}, NewAlState} ->
+            {{error, unacknowledged}, State#state{ alarmlist_state = NewAlState }};
+        {Error, NewAlState} ->
+            {Error, State#state{ alarmlist_state = NewAlState}}
+    end.
+
+log_unacknowledge(AlarmId, Src, EventId, AckInfo, LogCB, LogState) ->
+    LogCB:unacknowledge(AlarmId, Src, EventId, AckInfo,LogState).
+
+alarmlist_unacknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
+    AlCB:unacknowledge(AlarmId, Src, AckInfo,AlState).
+
+send_unacknowlegde_events(AlarmId, Src, EventId, AckInfo, EvtCB, EvtState) ->
+    EvtCB:unacknowledge(AlarmId, Src, EventId, AckInfo, EvtState).
 
 handle_comment(EventId, Text, UserId,
                #state{ alarmlist_cb = AlCB,

@@ -84,6 +84,10 @@ The format of the messages are:
 
         {elarm, Ref, {ack, alarm_id(), alarm_src(), event_id(), ack_info()}}
 
+* unacknowledged alarm:
+
+        {elarm, Ref, {unack, alarm_id(), alarm_src(), event_id(), ack_info()}}
+
 * cleared alarm:
 
         {elarm, Ref, {clear, alarm_id(), alarm_src(), event_id()}}

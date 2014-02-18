@@ -26,6 +26,8 @@
          unsubscribe/2,
          acknowledge/2,
          acknowledge/3,
+         unacknowledge/2,
+         unacknowledge/3,
          add_comment/3,
          add_comment/4,
          manual_clear/2,
@@ -259,6 +261,27 @@ acknowledge(EventId, UserId) ->
           ok | {error, term()}.
 acknowledge(Pid, EventId, UserId) ->
     elarm_server:acknowledge(Pid, EventId, UserId).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Unacknowledge one or more alarms.
+%% @equiv unacknowledge(elarm_server, EventId, UserId)
+%% @end
+%%--------------------------------------------------------------------
+-spec unacknowledge(event_id() | [event_id()], user_id()) ->
+          ok | {error, term()}.
+unacknowledge(EventId, UserId) ->
+    unacknowledge(elarm_server, EventId, UserId).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Unacknowledge one or more alarms.
+%% @end
+%%--------------------------------------------------------------------
+-spec unacknowledge(pid() | atom(), event_id() | [event_id()], user_id()) ->
+          ok | {error, term()}.
+unacknowledge(Pid, EventId, UserId) ->
+    elarm_server:unacknowledge(Pid, EventId, UserId).
 
 %%--------------------------------------------------------------------
 %% @doc
