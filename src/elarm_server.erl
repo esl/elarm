@@ -392,9 +392,8 @@ handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
                                    log_cb = LogCB,
                                    log_state = LogState } = State) ->
     case AlCB:get_alarm(AlarmId, Src, AlState) of
-        {{ok, #alarm{ event_id = EventId }}, AlState1} ->
-            {ok, NewLogState} = log_clear(AlarmId, Src, EventId, LogCB,
-                                          LogState),
+        {{ok, #alarm{ event_id = EventId } = Alarm}, AlState1} ->
+            {ok, NewLogState} = log_clear(Alarm, LogCB, LogState),
             {ok, NewAlState} = alarmlist_clear(AlarmId, Src, AlCB, AlState1),
             {ok, NewEvtState} = send_clear_events(AlarmId, Src, EventId,
                                                   EvtCB, EvtState),
@@ -405,8 +404,8 @@ handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_clear(AlarmId, Src, EventId, LogCB, LogState) ->
-    LogCB:clear(AlarmId, Src, EventId, LogState).
+log_clear(Alarm, LogCB, LogState) ->
+    LogCB:clear(Alarm, LogState).
 
 alarmlist_clear(AlarmId, Src, AlCB, AlState) ->
     AlCB:clear(AlarmId, Src, AlState).
@@ -422,11 +421,12 @@ handle_acknowledge(EventId, UserId,
                            log_cb = LogCB,
                            log_state = LogState } = State) ->
     case AlCB:get_alarm(EventId, AlState) of
-        {{ok, #alarm{ alarm_id = AlarmId, src = Src, state = new }}, AlState1} ->
+        {{ok, #alarm{ alarm_id = AlarmId, src = Src, state = new } = Alarm},
+         AlState1} ->
             AckInfo = #ack_info{user = UserId,
                                 time = timestamp()},
-            {ok, NewLogState} = log_acknowledge(AlarmId, Src, EventId, AckInfo,
-                                                LogCB, LogState),
+            {ok, NewLogState} = log_acknowledge(Alarm, AckInfo, LogCB,
+                                                LogState),
             {ok, NewAlState} = alarmlist_acknowledge(AlarmId, Src, AckInfo,
                                                      AlCB, AlState1),
             {ok, NewEvtState} = send_acknowlegde_events(AlarmId, Src, AckInfo,
@@ -440,8 +440,8 @@ handle_acknowledge(EventId, UserId,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_acknowledge(AlarmId, Src, EventId, AckInfo, LogCB, LogState) ->
-    LogCB:acknowledge(AlarmId, Src, EventId, AckInfo,LogState).
+log_acknowledge(Alarm, AckInfo, LogCB, LogState) ->
+    LogCB:acknowledge(Alarm, AckInfo,LogState).
 
 alarmlist_acknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
     AlCB:acknowledge(AlarmId, Src, AckInfo,AlState).
@@ -457,12 +457,15 @@ handle_unacknowledge(EventId, UserId,
                            log_cb = LogCB,
                            log_state = LogState } = State) ->
     case AlCB:get_alarm(EventId, AlState) of
-        {{ok, #alarm{ alarm_id = AlarmId, src = Src, state = acknowledged }},
+        {{ok,
+          #alarm{ alarm_id = AlarmId,
+                  src = Src,
+                  state = acknowledged } = Alarm},
          AlState1} ->
             AckInfo = #ack_info{user = UserId,
                                 time = timestamp()},
-            {ok, NewLogState} = log_unacknowledge(AlarmId, Src, EventId,
-                                                  AckInfo, LogCB, LogState),
+            {ok, NewLogState} = log_unacknowledge(Alarm, AckInfo, LogCB,
+                                                  LogState),
             {ok, NewAlState} = alarmlist_unacknowledge(AlarmId, Src, AckInfo,
                                                        AlCB, AlState1),
             {ok, NewEvtState} = send_unacknowlegde_events(AlarmId, Src, AckInfo,
@@ -477,8 +480,8 @@ handle_unacknowledge(EventId, UserId,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_unacknowledge(AlarmId, Src, EventId, AckInfo, LogCB, LogState) ->
-    LogCB:unacknowledge(AlarmId, Src, EventId, AckInfo,LogState).
+log_unacknowledge(Alarm, AckInfo, LogCB, LogState) ->
+    LogCB:unacknowledge(Alarm, AckInfo,LogState).
 
 alarmlist_unacknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
     AlCB:unacknowledge(AlarmId, Src, AckInfo,AlState).
@@ -494,12 +497,11 @@ handle_comment(EventId, Text, UserId,
                        log_cb = LogCB,
                        log_state = LogState } = State) ->
     case AlCB:get_alarm(EventId, AlState) of
-        {{ok, #alarm{ alarm_id = AlarmId, src = Src }}, AlState1} ->
+        {{ok, #alarm{ alarm_id = AlarmId, src = Src } = Alarm}, AlState1} ->
             Comment = #comment{ user = UserId,
                                 time = timestamp(),
                                 text = Text},
-            {ok, NewLogState} = log_comment(AlarmId, Src, EventId, Comment,
-                                            LogCB, LogState),
+            {ok, NewLogState} = log_comment(Alarm, Comment, LogCB, LogState),
             {ok, NewAlState} = alarmlist_comment(AlarmId, Src, Comment,
                                                  AlCB, AlState1),
             {ok, NewEvtState} = send_comment_events(AlarmId, Src, Comment,
@@ -511,8 +513,8 @@ handle_comment(EventId, Text, UserId,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_comment(AlarmId, Src, EventId, Comment, LogCB, LogState) ->
-    LogCB:add_comment(AlarmId, Src, EventId, Comment, LogState).
+log_comment(Alarm, Comment, LogCB, LogState) ->
+    LogCB:add_comment(Alarm, Comment, LogState).
 
 alarmlist_comment(AlarmId, Src, Comment, AlCB, AlState) ->
     AlCB:add_comment(AlarmId, Src, Comment, AlState).
@@ -527,9 +529,9 @@ handle_manual_clear(EventId, UserId, #state{ alarmlist_cb = AlCB,
                                              log_cb = LogCB,
                                              log_state = LogState } = State) ->
     case AlCB:get_alarm(EventId, AlState) of
-        {{ok, #alarm{ alarm_id = AlarmId, src = Src }}, AlState1} ->
-            {ok, NewLogState} = log_manual_clear(AlarmId, Src, EventId, UserId,
-                                                 LogCB, LogState),
+        {{ok, Alarm}, AlState1} ->
+            {ok, NewLogState} = log_manual_clear(Alarm, UserId, LogCB,
+                                                 LogState),
             {ok, NewAlState} = alarmlist_manual_clear(EventId, AlCB, AlState1),
             {ok, NewEvtState} = send_manual_clear_events(EventId, UserId, EvtCB,
                                                          EvtState),
@@ -540,8 +542,8 @@ handle_manual_clear(EventId, UserId, #state{ alarmlist_cb = AlCB,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_manual_clear(AlarmId, Src, EventId, UserId, LogCB, LogState) ->
-    LogCB:clear(AlarmId, Src, EventId, UserId, LogState).
+log_manual_clear(Alarm, UserId, LogCB, LogState) ->
+    LogCB:clear(Alarm, UserId, LogState).
 
 alarmlist_manual_clear(EventId, AlCB, AlState) ->
     AlCB:manual_clear(EventId, AlState).
