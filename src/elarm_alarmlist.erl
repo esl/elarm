@@ -11,6 +11,7 @@
 %% API
 -export([init/1,
          new_alarm/2,
+         repeat_alarm/2,
          acknowledge/4,
          add_comment/4,
          clear/3,
@@ -46,6 +47,10 @@ new_alarm(#alarm{ alarm_id = AlId, src = Src, event_id = EventId } = Alarm,
     Key = {AlId, Src},
     true = ets:insert(AList, {Key, Alarm}),
     true = ets:insert(EventIds, {EventId, Key}),
+    {ok, State}.
+
+-spec repeat_alarm(alarm(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
+repeat_alarm(_Alarm, State) ->
     {ok, State}.
 
 -spec acknowledge(alarm_id(), alarm_src(), ack_info(), #al_state{}) ->
