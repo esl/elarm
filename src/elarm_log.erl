@@ -13,6 +13,7 @@
 %% API
 -export([init/1,
          new_alarm/2,
+         repeat_alarm/2,
          acknowledge/3,
          unacknowledge/3,
          add_comment/3,
@@ -38,6 +39,10 @@ init(_Opts) ->
 
 -spec new_alarm(alarm(), #log_state{}) -> {ok, #log_state{}}.
 new_alarm(_Alarm, State) ->
+    {ok,State}.
+
+-spec repeat_alarm(alarm(), #log_state{}) -> {ok, #log_state{}}.
+repeat_alarm(_Alarm, State) ->
     {ok,State}.
 
 -spec acknowledge(alarm(), ack_info(), #log_state{}) ->

@@ -13,6 +13,7 @@
          subscribe/3,
          unsubscribe/2,
          new_alarm/2,
+         repeat_alarm/2,
          acknowledge/5,
          unacknowledge/5,
          add_comment/5,
@@ -61,6 +62,11 @@ unsubscribe(Ref, #evt_state{ subs = Subs } = State)->
 -spec new_alarm(alarm(), #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
 new_alarm(Alarm, #evt_state{ subs = Subs } = State) ->
     send_events(Alarm, Subs),
+    {ok, State}.
+
+-spec repeat_alarm(alarm(), #evt_state{}) ->
+          {ok, #evt_state{}} | {error, term()}.
+repeat_alarm(_Alarm, State) ->
     {ok, State}.
 
 -spec acknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),

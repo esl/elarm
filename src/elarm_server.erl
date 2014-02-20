@@ -332,7 +332,12 @@ process_raise(AlarmId, Src, AddInfo, Cfg,
                             event_state = NewEvtState,
                             log_state = NewLogState };
         {true, NewState} ->
-            NewState
+            {ok, NewLogState} = log_repeat_alarm(Alarm, LogCB, LogState),
+            {ok, NewAlState} = update_repeat_alarmlist(Alarm, AlCB, AlState),
+            {ok, NewEvtState} = send_repeat_events(Alarm, EvtCB, EvtState),
+            NewState#state{ alarmlist_state = NewAlState,
+                            event_state = NewEvtState,
+                            log_state = NewLogState }
     end.
 
 create_alarm_rec(AlarmId, Src, AddInfo, Cfg) ->
@@ -384,6 +389,15 @@ update_alarmlist(Alarm, AlCB, AlState) ->
 
 send_new_events(Alarm, EventCB, EventState) ->
     EventCB:new_alarm(Alarm, EventState).
+
+log_repeat_alarm(Alarm, LogCB, LogState) ->
+    LogCB:repeat_alarm(Alarm, LogState).
+
+update_repeat_alarmlist(Alarm, AlCB, AlState) ->
+    AlCB:repeat_alarm(Alarm, AlState).
+
+send_repeat_events(Alarm, EventCB, EventState) ->
+    EventCB:repeat_alarm(Alarm, EventState).
 
 handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
                                    alarmlist_state = AlState,
