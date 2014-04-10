@@ -30,7 +30,7 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link(Name, Opts) ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, [Name, Opts]).
+    supervisor:start_link(?MODULE, [Name, Opts]).
 
 %%%===================================================================
 %%% Supervisor callbacks
