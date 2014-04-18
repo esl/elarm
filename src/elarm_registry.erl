@@ -28,7 +28,7 @@
 -define(SERVER, ?MODULE).
 
 -record(state, {
-          servers = []      :: [atom()],
+          servers = []      :: [{atom(), pid()}],   %% ServerName & Pid
           subscribers = []  :: [{pid(), reference()}]
          }).
 
@@ -59,7 +59,7 @@ start_link() ->
 %%% </dl>
 %%% @end
 %%%-------------------------------------------------------------------
--spec subscribe() -> ok.
+-spec subscribe() -> {ok, [{atom(), pid()}]}.
 subscribe() ->
     gen_server:call(?SERVER, {subscribe, self()}).
 
@@ -80,7 +80,7 @@ unsubscribe() ->
 %%%-------------------------------------------------------------------
 -spec server_started(atom()) -> term().
 server_started(Name) ->
-    gen_server:cast(?SERVER, {elarm_started, Name}).
+    gen_server:cast(?SERVER, {elarm_started, Name, self()}).
 
 %%%-------------------------------------------------------------------
 %%% @doc
@@ -91,7 +91,7 @@ server_started(Name) ->
 %%%-------------------------------------------------------------------
 -spec server_stopped(atom()) -> term().
 server_stopped(Name) ->
-    gen_server:cast(?SERVER, {elarm_stopped, Name}).
+    gen_server:cast(?SERVER, {elarm_stopped, Name, self()}).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -101,21 +101,26 @@ init(_) ->
     {ok, #state{}}.
 
 handle_call({subscribe, Pid}, _From, State) ->
-    {reply, ok, handle_subscribe(Pid, State)};
+    {reply, {ok, State#state.servers}, handle_subscribe(Pid, State)};
 handle_call({unsubscribe, Pid}, _From, State) ->
     {reply, ok, handle_unsubscribe(Pid, State)}.
 
-handle_cast({elarm_started, Name}, State) ->
-    {noreply, handle_server_started(Name, State)};
-handle_cast({elarm_stopped, Name}, State) ->
-    {noreply, handle_server_down(Name, State)};
+handle_cast({elarm_started, Name, Pid}, State) ->
+    {noreply, handle_server_started(Name, Pid, State)};
+handle_cast({elarm_stopped, Name, Pid}, State) ->
+    {noreply, handle_server_down(Name, Pid, State)};
 handle_cast(_Req, State) ->
     {noreply, State}.
 
 handle_info({'DOWN', _MRef, _Type, {Name, Node}, _Info}, State)
   when Node =:= node() ->
     %% An elarm server went down
-    {noreply, handle_server_down(Name, State)};
+    case lists:keyfind(Name, 1, State#state.servers) of
+        {Name, Pid} ->
+            {noreply, handle_server_down(Name, Pid, State)};
+        false ->
+            {noreply, State}
+    end;
 handle_info({'DOWN', _MRef, _Type, Pid, _Info}, State) ->
     %% An external subscriber went down
     {noreply, handle_unsubscribe(Pid, State)};
@@ -153,18 +158,20 @@ handle_unsubscribe(Pid, #state{subscribers = Subs} = State) ->
             State#state{subscribers = lists:keydelete(Pid, 1, Subs)}
     end.
 
-handle_server_down(Name, #state{servers = Servers} = State) ->
-    [Sub ! {elarm_down, Name} || {Sub, _Mon} <- State#state.subscribers],
-    State#state{servers = lists:delete(Name, Servers)}.
+handle_server_down(Name, Pid, #state{servers = Servers} = State) ->
+    [Sub ! {elarm_down, Name, Pid}
+        || {Sub, _Mon} <- State#state.subscribers],
+    State#state{servers = lists:keydelete(Name, 1, Servers)}.
 
-handle_server_started(Name, #state{servers = Servers} = State) ->
+handle_server_started(Name, Pid, #state{servers = Servers} = State) ->
     erlang:monitor(process, Name),
-    [Sub ! {elarm_started, Name} || {Sub, _Mon} <- State#state.subscribers],
-    case lists:member(Name, Servers) of
-        true ->
-            State;
+    [Sub ! {elarm_started, Name, Pid}
+        || {Sub, _Mon} <- State#state.subscribers],
+    case lists:keyfind(Name, 1, Servers) of
         false ->
-            State#state{servers = [Name | Servers]}
+            State#state{servers = [{Name, Pid} | Servers]};
+        _ ->
+            State
     end.
 
 %%%===================================================================
@@ -174,17 +181,15 @@ handle_server_started(Name, #state{servers = Servers} = State) ->
 -ifdef(TEST).
 
 subscribe_test_() ->
-    WaitFor = fun(Msg) ->
-                  receive
-                      Msg ->
-                          ok;
-                      Other ->
-                          {unexpected_message, Other}
-                  after
-                      100 ->
-                          no_message
-                  end
-              end,
+    GetMsg = fun() ->
+                 receive
+                     Msg ->
+                         Msg
+                 after
+                     100 ->
+                         {error, no_message}
+                 end
+             end,
     {setup,
      local,
      fun() ->
@@ -213,21 +218,24 @@ subscribe_test_() ->
      fun(_) ->
          exit(whereis(?MODULE), kill)
      end,
-     [?_assertEqual(ok, begin
-                            {ok, P} = elarm_server:start_link(test, []),
-                            erlang:unlink(P),
-                            WaitFor({elarm_started, test})
-                        end),
-      ?_assertEqual(ok, begin
-                            exit(whereis(test), shutdown),
-                            WaitFor({elarm_down, test})
-                        end),
-      ?_assertEqual(no_message, begin
-                                    elarm_registry:unsubscribe(),
-                                    {ok, P} = elarm_server:start_link(test2, []),
-                                    erlang:unlink(P),
-                                    WaitFor(dummy)
-                                end)]
+     [?_assertMatch({elarm_started, test, _},
+                    begin
+                        {ok, P} = elarm_server:start_link(test, []),
+                        erlang:unlink(P),
+                        GetMsg()
+                    end),
+      ?_assertMatch({elarm_down, test, _},
+                    begin
+                        exit(whereis(test), shutdown),
+                        GetMsg()
+                    end),
+      ?_assertEqual({error, no_message},
+                    begin
+                        elarm_registry:unsubscribe(),
+                        {ok, P} = elarm_server:start_link(test2, []),
+                        erlang:unlink(P),
+                        GetMsg()
+                    end)]
      }.
 
 -endif.
