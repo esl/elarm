@@ -59,7 +59,13 @@
 -spec start_link(atom(), proplists:proplist()) ->
           {ok, pid()} | ignore | {error, term()}.
 start_link(Name, Opts) when is_list(Opts) ->
-    gen_server:start_link({local, Name}, ?MODULE, Opts, []).
+    case gen_server:start_link({local, Name}, ?MODULE, Opts, []) of
+        {ok, _} = Ok ->
+            elarm_registry:server_started(Name),
+            Ok;
+        Error ->
+            Error
+    end.
 
 %% Raise an alarm.
 -spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) ->

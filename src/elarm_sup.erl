@@ -72,11 +72,12 @@ init([]) ->
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
     Servers = mk_servers_specs(),
-    {ok, {SupFlags, Servers}}.
+    {ok, {SupFlags, [registry_spec() | Servers]}}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
 mk_servers_specs() ->
     {ok,Servers} = application:get_env(elarm, servers),
     [alarm_manager_spec(Name, Opts) || {Name, Opts} <- Servers].
@@ -84,3 +85,7 @@ mk_servers_specs() ->
 alarm_manager_spec(Name, Opts) ->
     {Name, {elarm_man_sup, start_link, [Name, Opts]},
      permanent, 2000, supervisor, [elarm_man_sup]}.
+
+registry_spec() ->
+    {elarm_registry, {elarm_registry, start_link, []},
+     permanent, 2000, worker, [elarm_registry]}.
