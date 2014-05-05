@@ -47,7 +47,9 @@ stop_server(Name) ->
 
 %% Get a list of all servers running
 which_servers() ->
-    [{Name, Pid} || {Name, Pid, _, _} <- supervisor:which_children(?SERVER)].
+    [{Name, Pid}
+     || {Name, Pid, _, [?SERVER]} <- supervisor:which_children(?SERVER)].
+
 %%%===================================================================
 %%% Supervisor callbacks
 %%%===================================================================

@@ -14,7 +14,7 @@
 -export([start_link/2,
          raise/4,
          clear/3,
-         subscribe/2,
+         subscribe/3,
          unsubscribe/2,
          acknowledge/3,
          unacknowledge/3,
@@ -59,13 +59,7 @@
 -spec start_link(atom(), proplists:proplist()) ->
           {ok, pid()} | ignore | {error, term()}.
 start_link(Name, Opts) when is_list(Opts) ->
-    case gen_server:start_link({local, Name}, ?MODULE, Opts, []) of
-        {ok, _} = Ok ->
-            elarm_registry:server_started(Name),
-            Ok;
-        Error ->
-            Error
-    end.
+    gen_server:start_link({local, Name}, ?MODULE, [Name, Opts], []).
 
 %% Raise an alarm.
 -spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) ->
@@ -82,9 +76,10 @@ clear(Pid, Id, Src) ->
 %% Functions used by presentation layer to access alarm status
 
 %% Start subscription on alarm events matching Filter.
--spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.
-subscribe(Pid, Filter) ->
-    gen_server:call(Pid, {subscribe, self(), Filter}).
+-spec subscribe(pid()|atom(), sub_filter(), pid()) ->
+                                            {ok, reference(), [alarm()]}.
+subscribe(Pid, Filter, Subscriber) ->
+    gen_server:call(Pid, {subscribe, Subscriber, Filter}).
 
 %% Cancel subscription.
 -spec unsubscribe(pid()|atom(), reference()) -> ok.
@@ -154,11 +149,12 @@ add_configuration(Pid, AlarmId, Config) ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init(Opts) ->
+init([Name, Opts]) ->
     {AlCB, AlState} = init_alarm_list(Opts),
     {CfgCB, CfgState} = init_config(Opts),
     {LogCB, LogState} = init_log(Opts),
     {EventCB, EventState} = init_event(Opts),
+    elarm_registry:server_started(Name),
     {ok, #state{alarmlist_cb = AlCB,
                 alarmlist_state = AlState,
                 config_cb = CfgCB,

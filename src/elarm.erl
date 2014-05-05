@@ -18,8 +18,8 @@
          raise/4,
          clear/2,
          clear/3,
-         subscribe/1,
          subscribe/2,
+         subscribe/3,
          subscribe_summary/1,
          subscribe_summary/2,
          unsubscribe/1,
@@ -102,7 +102,7 @@ stop_server(Name) ->
 %%--------------------------------------------------------------------
 -spec which_servers() -> [{atom(), pid()}].
 which_servers() ->
-    elarm_sup:which_servers().
+    elarm_registry:which_servers().
 
 %% -------------------------------------------------------------------
 %% Functions used by an application or adaptation module to raise or
@@ -124,8 +124,8 @@ raise(Id, Src, AddInfo) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) -> ok.
-raise(Ref, Id, Src, AddInfo) ->
-    elarm_server:raise(Ref, Id, Src, AddInfo).
+raise(Srv, Id, Src, AddInfo) ->
+    elarm_server:raise(Srv, Id, Src, AddInfo).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -143,8 +143,8 @@ clear(Id, Src) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec clear(pid()|atom(), alarm_id(), alarm_src()) -> ok.
-clear(Ref, Id, Src) ->
-    elarm_server:clear(Ref, Id, Src).
+clear(Srv, Id, Src) ->
+    elarm_server:clear(Srv, Id, Src).
 
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm status
@@ -155,9 +155,9 @@ clear(Ref, Id, Src) ->
 %% @equiv  subscribe(elarm_server, Filter)
 %% @end
 %%--------------------------------------------------------------------
--spec subscribe(sub_filter()) -> {ok, reference(), [alarm()]}.
-subscribe(Filter) when is_list(Filter) ->
-    subscribe(elarm_server, Filter).
+-spec subscribe(sub_filter(), pid()) -> {ok, reference(), [alarm()]}.
+subscribe(Filter, Subsc) when is_list(Filter) ->
+    subscribe(elarm_server, Filter, Subsc).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -192,9 +192,10 @@ subscribe(Filter) when is_list(Filter) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec subscribe(pid()|atom(), sub_filter()) -> {ok, reference(), [alarm()]}.
-subscribe(Pid, Filter) when is_list(Filter) ->
-    elarm_server:subscribe(Pid, Filter).
+-spec subscribe(pid()|atom(), sub_filter(), pid()) ->
+                                            {ok, reference(), [alarm()]}.
+subscribe(Srv, Filter, Subsc) when is_list(Filter) ->
+    elarm_server:subscribe(Srv, Filter, Subsc).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -212,8 +213,8 @@ unsubscribe(Ref) when is_reference(Ref) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec unsubscribe(pid()|atom(), reference()) -> ok.
-unsubscribe(Pid, Ref) when is_reference(Ref) ->
-    elarm_server:unsubscribe(Pid, Ref).
+unsubscribe(Srv, Ref) when is_reference(Ref) ->
+    elarm_server:unsubscribe(Srv, Ref).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -259,8 +260,8 @@ acknowledge(EventId, UserId) ->
 %%--------------------------------------------------------------------
 -spec acknowledge(pid() | atom(), event_id() | [event_id()], user_id()) ->
           ok | {error, term()}.
-acknowledge(Pid, EventId, UserId) ->
-    elarm_server:acknowledge(Pid, EventId, UserId).
+acknowledge(Srv, EventId, UserId) ->
+    elarm_server:acknowledge(Srv, EventId, UserId).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -280,8 +281,8 @@ unacknowledge(EventId, UserId) ->
 %%--------------------------------------------------------------------
 -spec unacknowledge(pid() | atom(), event_id() | [event_id()], user_id()) ->
           ok | {error, term()}.
-unacknowledge(Pid, EventId, UserId) ->
-    elarm_server:unacknowledge(Pid, EventId, UserId).
+unacknowledge(Srv, EventId, UserId) ->
+    elarm_server:unacknowledge(Srv, EventId, UserId).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -300,8 +301,8 @@ add_comment(EventId, Text, UserId) ->
 %%--------------------------------------------------------------------
 -spec add_comment(pid()|atom(), event_id(), text(), user_id()) ->
           ok | {error, term()}.
-add_comment(Pid, EventId, Text, UserId) ->
-    elarm_server:add_comment(Pid, EventId, Text, UserId).
+add_comment(Srv, EventId, Text, UserId) ->
+    elarm_server:add_comment(Srv, EventId, Text, UserId).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -319,8 +320,8 @@ manual_clear(EventId, UserId) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec manual_clear(pid()|atom(), event_id(), user_id()) -> ok | {error, term()}.
-manual_clear(Pid, EventId, UserId) ->
-    elarm_server:manual_clear(Pid, EventId, UserId).
+manual_clear(Srv, EventId, UserId) ->
+    elarm_server:manual_clear(Srv, EventId, UserId).
 
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm log
@@ -338,8 +339,8 @@ read_log(Filter) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec read_log(pid()|atom(), term()) -> [alarm()].
-read_log(Pid, Filter) ->
-    elarm_server:read_log(Pid, Filter).
+read_log(Srv, Filter) ->
+    elarm_server:read_log(Srv, Filter).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -357,8 +358,8 @@ get_alarms() ->
 %% @end
 %%--------------------------------------------------------------------
 -spec get_alarms(pid()|atom()) -> [alarm()].
-get_alarms(Pid) ->
-    elarm_server:get_alarms(Pid).
+get_alarms(Srv) ->
+    elarm_server:get_alarms(Srv).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -377,8 +378,8 @@ get_configured() ->
 %%--------------------------------------------------------------------
 -spec get_configured(pid()|atom()) -> {ok, [{alarm_id(),alarm_config()}]} |
                                       {error, term()}.
-get_configured(Pid) ->
-    elarm_server:get_configured(Pid).
+get_configured(Srv) ->
+    elarm_server:get_configured(Srv).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -398,8 +399,8 @@ get_unconfigured() ->
 %% @end
 %%--------------------------------------------------------------------
 -spec get_unconfigured(pid()|atom()) -> {ok, [alarm_id()]} | {error, term()}.
-get_unconfigured(Pid) ->
-    elarm_server:get_unconfigured(Pid).
+get_unconfigured(Srv) ->
+    elarm_server:get_unconfigured(Srv).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -421,8 +422,8 @@ get_all_configuration() ->
 %%--------------------------------------------------------------------
 -spec get_all_configuration(pid()|atom()) ->
           {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
-get_all_configuration(Pid) ->
-    elarm_server:get_all_configuration(Pid).
+get_all_configuration(Srv) ->
+    elarm_server:get_all_configuration(Srv).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -441,8 +442,8 @@ get_default_configuration() ->
 %%--------------------------------------------------------------------
 -spec get_default_configuration(pid()|atom()) -> {ok, alarm_config()} |
                                                  {error, term()}.
-get_default_configuration(Pid) ->
-    elarm_server:get_default_configuration(Pid).
+get_default_configuration(Srv) ->
+    elarm_server:get_default_configuration(Srv).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -461,8 +462,8 @@ add_configuration(AlarmId, Config) ->
 %%--------------------------------------------------------------------
 -spec add_configuration(pid()|atom(), alarm_id(), alarm_config()) ->
           ok | {error, term()}.
-add_configuration(Pid, AlarmId, Config) ->
-    elarm_server:add_configuration(Pid, AlarmId, Config).
+add_configuration(Srv, AlarmId, Config) ->
+    elarm_server:add_configuration(Srv, AlarmId, Config).
 
 %%%===================================================================
 %%% Internal functions
