@@ -13,6 +13,7 @@
          new_alarm/2,
          repeat_alarm/2,
          acknowledge/4,
+         unacknowledge/4,
          add_comment/4,
          clear/3,
          manual_clear/2,
@@ -60,6 +61,15 @@ acknowledge(AlarmId, Src, AckInfo,
     [{Key, Alarm}] = ets:lookup(AList, {AlarmId, Src}),
     true = ets:insert(AList, {Key,Alarm#alarm{ ack_info = AckInfo,
                                                state = acknowledged }}),
+    {ok, State}.
+
+-spec unacknowledge(alarm_id(), alarm_src(), ack_info(), #al_state{}) ->
+          {ok, #al_state{}} | {error, term()}.
+unacknowledge(AlarmId, Src, AckInfo,
+              #al_state{ alarmlist = AList } = State) ->
+    [{Key, Alarm}] = ets:lookup(AList, {AlarmId, Src}),
+    true = ets:insert(AList, {Key,Alarm#alarm{ ack_info = AckInfo,
+                                               state = new }}),
     {ok, State}.
 
 %% Add a comment to an alarm
