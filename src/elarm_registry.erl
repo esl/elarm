@@ -9,8 +9,9 @@
 -behaviour(gen_server).
 
 -export([start_link/0,
-         subscribe/0,
-         unsubscribe/0,
+         subscribe/1,
+         unsubscribe/1,
+         which_servers/0,
          server_started/1,
          server_stopped/1]).
 
@@ -59,18 +60,27 @@ start_link() ->
 %%% </dl>
 %%% @end
 %%%-------------------------------------------------------------------
--spec subscribe() -> {ok, [{atom(), pid()}]}.
-subscribe() ->
-    gen_server:call(?SERVER, {subscribe, self()}).
+-spec subscribe(pid()) -> {ok, [{atom(), pid()}]}.
+subscribe(Subscriber) ->
+    gen_server:call(?SERVER, {subscribe, Subscriber}).
 
 %%%-------------------------------------------------------------------
 %%% @doc
 %%% Unsubscribe from elarm events
 %%% @end
 %%%-------------------------------------------------------------------
--spec unsubscribe() -> ok.
-unsubscribe() ->
-    gen_server:call(?SERVER, {unsubscribe, self()}).
+-spec unsubscribe(pid()) -> ok.
+unsubscribe(Subscriber) ->
+    gen_server:call(?SERVER, {unsubscribe, Subscriber}).
+
+%%%-------------------------------------------------------------------
+%%% @doc
+%%% Get all registered elarm server processes
+%%% @end
+%%%-------------------------------------------------------------------
+-spec which_servers() -> [{atom(), pid()}].
+which_servers() ->
+    gen_server:call(?SERVER, which_servers).
 
 %%%-------------------------------------------------------------------
 %%% @doc
@@ -103,7 +113,12 @@ init(_) ->
 handle_call({subscribe, Pid}, _From, State) ->
     {reply, {ok, State#state.servers}, handle_subscribe(Pid, State)};
 handle_call({unsubscribe, Pid}, _From, State) ->
-    {reply, ok, handle_unsubscribe(Pid, State)}.
+    {reply, ok, handle_unsubscribe(Pid, State)};
+handle_call(which_servers, _From, State) ->
+    {reply, State#state.servers, State};
+handle_call(Req, _From, State) ->
+    lager:debug("Unsupported call: ~p", [Req]),
+    {reply, {error, {unsupported, Req}}, State}.
 
 handle_cast({elarm_started, Name, Pid}, State) ->
     {noreply, handle_server_started(Name, Pid, State)};
@@ -180,16 +195,16 @@ handle_server_started(Name, Pid, #state{servers = Servers} = State) ->
 
 -ifdef(TEST).
 
+-define(GET_MSG(PATTERN),
+        receive
+            ?PATTERN = Msg ->
+                Msg
+        after
+            100 ->
+                {error, no_message}
+        end).
+
 subscribe_test_() ->
-    GetMsg = fun() ->
-                 receive
-                     Msg ->
-                         Msg
-                 after
-                     100 ->
-                         {error, no_message}
-                 end
-             end,
     {setup,
      local,
      fun() ->
@@ -213,29 +228,39 @@ subscribe_test_() ->
                                        {ignore, false}]),
          {ok, P} = elarm_registry:start_link(),
          erlang:unlink(P),
-         elarm_registry:subscribe()
+         elarm_registry:subscribe(self())
      end,
      fun(_) ->
          exit(whereis(?MODULE), kill)
      end,
-     [?_assertMatch({elarm_started, test, _},
-                    begin
-                        {ok, P} = elarm_server:start_link(test, []),
-                        erlang:unlink(P),
-                        GetMsg()
-                    end),
-      ?_assertMatch({elarm_down, test, _},
-                    begin
-                        exit(whereis(test), shutdown),
-                        GetMsg()
-                    end),
-      ?_assertEqual({error, no_message},
-                    begin
-                        elarm_registry:unsubscribe(),
-                        {ok, P} = elarm_server:start_link(test2, []),
-                        erlang:unlink(P),
-                        GetMsg()
-                    end)]
+     [fun() ->
+              {ok, P} = elarm_server:start_link(test, []),
+              erlang:unlink(P),
+              receive
+                  {elarm_started, test, _} ->
+                      ok
+              end
+      end,
+      fun() ->
+              exit(whereis(test), shutdown),
+              receive
+                  {elarm_down, test, _} ->
+                      ok
+              end
+      end,
+      fun() ->
+              elarm_registry:unsubscribe(self()),
+              {ok, P} = elarm_server:start_link(test2, []),
+              erlang:unlink(P),
+              receive
+                  {elarm_started, test2, _} ->
+                      ?assert(false)
+              after
+                  100 ->
+                      ok
+              end
+      end
+     ]
      }.
 
 -endif.

@@ -92,6 +92,10 @@ The format of the messages are:
 
         {elarm, Ref, {clear, alarm_id(), alarm_src(), event_id()}}
 
+* manual cleared alarm:
+
+        {elarm, Ref, {manual_clear, alarm_id(), alarm_src(), event_id(), user_id()}} 
+
 * comment added:
 
         {elarm, Ref, {add_comment, alarm_id(), alarm_src(), event_id, comment()}}
