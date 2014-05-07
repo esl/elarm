@@ -18,7 +18,7 @@
          unacknowledge/5,
          add_comment/5,
          clear/4,
-         manual_clear/3,
+         manual_clear/5,
          handle_down/2,
          filter_alarms/2]).
 
@@ -102,13 +102,15 @@ add_comment(AlarmId, Src, EventId, Comment,
 clear(AlarmId, Src, EventId, #evt_state{ subs = Subs } =  State) ->
     Event = {clear, AlarmId, Src, EventId},
     send_events(Event, Subs),
-    {ok,State}.
+    {ok, State}.
 
 %% Manually clear an alarm
--spec manual_clear(event_id(), user_id(), #evt_state{}) ->
-          {ok, #evt_state{}} | {error, term()}.
-manual_clear(_EventId, _UserId, #evt_state{ subs = _Subs } =  State) ->
-    %% FIXME Implement this function.
+-spec manual_clear(alarm_id(), alarm_src(), event_id(), user_id(),
+                   #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
+manual_clear(AlarmId, AlarmSrc, EventId, UserId,
+             #evt_state{ subs = Subs } =  State) ->
+    Event = {manual_clear, AlarmId, AlarmSrc, EventId, UserId},
+    send_events(Event, Subs),
     {ok, State}.
 
 %% Remove a subscriber when he has terminated

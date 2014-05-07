@@ -546,8 +546,9 @@ handle_manual_clear(AlarmId, AlarmSrc, UserId,
             {ok, NewLogState} = log_manual_clear(Alarm, UserId, LogCB,
                                                  LogState),
             {ok, NewAlState} = alarmlist_manual_clear(EventId, AlCB, AlState1),
-            {ok, NewEvtState} = send_manual_clear_events(EventId, UserId, EvtCB,
-                                                         EvtState),
+            {ok, NewEvtState} = send_manual_clear_events(AlarmId, AlarmSrc,
+                                                         EventId, UserId,
+                                                         EvtCB, EvtState),
             {ok, State#state{ alarmlist_state = NewAlState,
                               event_state = NewEvtState,
                               log_state = NewLogState }};
@@ -561,8 +562,8 @@ log_manual_clear(Alarm, UserId, LogCB, LogState) ->
 alarmlist_manual_clear(EventId, AlCB, AlState) ->
     AlCB:manual_clear(EventId, AlState).
 
-send_manual_clear_events(EventId, UserId, EvtCB, EvtState) ->
-    EvtCB:manual_clear(EventId, UserId, EvtState).
+send_manual_clear_events(AlarmId, AlarmSrc, EventId, UserId, EvtCB, EvtState) ->
+    EvtCB:manual_clear(AlarmId, AlarmSrc, EventId, UserId, EvtState).
 
 handle_get_alarms(#state{ alarmlist_cb = AlCB,
                           alarmlist_state = AlState} = State) ->

@@ -16,7 +16,8 @@ all_test_() ->
       {"subscribe test", fun subscribe/0},
       {"raise/clear test", fun raise_clear/0},
       {"ack/unack test", fun raise_ack_unack/0},
-      {"comment test", fun comment/0}
+      {"comment test", fun comment/0},
+      {"manual clear test", fun manual_clear/0}
      ]}.
 
 setup() ->
@@ -47,6 +48,10 @@ raise_clear() ->
     end,
 
     elarm:clear(too_hot, "cpu1"),
+    receive
+        {elarm, _, {clear, too_hot, "cpu1", _}} ->
+            ok
+    end,
 
     {ok, Alarms} = elarm:get_alarms(),
     lists:all(fun(#alarm{alarm_id = Id, src = Src}) ->
@@ -94,6 +99,18 @@ comment() ->
     after
         100 ->
             ?assert(false)
+    end,
+
+    elarm:unsubscribe(Ref).
+
+manual_clear() ->
+    {ok, Ref, _} = elarm:subscribe([all], self()),
+    elarm:raise(bad_disk, "sda", []),
+    elarm:manual_clear(bad_disk, "sda", <<"admin">>),
+
+    receive
+        {elarm, _, {manual_clear, bad_disk, "sda", _, <<"admin">>}} ->
+            ok
     end,
 
     elarm:unsubscribe(Ref).
