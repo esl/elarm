@@ -1,6 +1,19 @@
 %%%-------------------------------------------------------------------
-%%% @author Anders Nygren <erlang-solutions.com>
-%%% @copyright (C) 2013, Erlang Solution Ltd.
+%%% Copyright (C) 2013-2014, Erlang Solution Ltd.
+%%%
+%%% Licensed under the Apache License, Version 2.0 (the "License");
+%%% you may not use this file except in compliance with the License.
+%%% You may obtain a copy of the License at
+%%%
+%%%     http://www.apache.org/licenses/LICENSE-2.0
+%%%
+%%% Unless required by applicable law or agreed to in writing, software
+%%% distributed under the License is distributed on an "AS IS" BASIS,
+%%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%%% See the License for the specific language governing permissions and
+%%% limitations under the License.
+%%%
+%%% @author Anders Nygren <anders.nygren@erlang-solutions.com>
 %%% @doc
 %%% Alarm status summary server.
 %%%
@@ -13,8 +26,8 @@
 %%% Filter)`. This will start an `elarm_summary` process (under an
 %%% `elarm_summary_sup` supervisor), which subscribes to alarms, and notifies
 %%% its subscribers about the updated summary when it receives an alarm.
-%%%
 %%% @end
+%%%
 %%% Created : 14 Aug 2013 by Anders Nygren <anders.nygren@erlang-solutions.com>
 %%%-------------------------------------------------------------------
 -module(elarm_summary).
