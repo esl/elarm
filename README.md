@@ -7,6 +7,37 @@ Elarm is an Alarm Manager for Erlang. It is designed to be easy to include in an
 Erlang based system. Most functions are implemented through plugins so it is
 easy to change the behaviour if necessary.
 
+# Quick Start #
+
+Elarm is designed to be part of an Erlang system.
+
+But it can also be started quickly from an Erlang shell:
+
+    $ git clone git@github.com:esl/elarm.git
+    [...]
+    $ cd elarm
+    $ make
+    [...]
+    $ erl -pa ebin -pa deps/gproc/ebin
+    > application:start(gproc).
+    ok
+    > application:start(elarm).
+    ok
+    > elarm:raise(partition_full, "/dev/hda2", [{level,90}]).
+    ok
+    > elarm:get_alarms().
+    {ok,[{alarm,partition_full,undefined,"/dev/hda2",
+                {{2014,5,12},{10,46,45}},
+                {1399,891605,536270},
+                indeterminate,<<>>,<<>>,<<>>,
+                [{level,90}],
+                [],[],undefined,undefined,new,undefined}]}
+    > elarm:clear(partition_full, "/dev/hda2").
+    ok
+    > elarm:get_alarms().
+    {ok,[]}
+    >
+
 ## Alarms vs Events ##
 
 Alarms and Events are often mixed up, but there are some important differences.
