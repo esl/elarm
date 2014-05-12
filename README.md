@@ -58,7 +58,7 @@ removed the alarm is cleared.
 Elarm keeps a list of all currently active alarms. It is possible for a Manager
 application to subscribe to all changes in the alarm list.
 
-A user can acknowledge alarm, that is to tell elarm that he is aware of the
+A user can acknowledge alarm, that is to tell Elarm that he is aware of the
 alarm. It is also possible to add comments to an alarm. Finally it is possible
 to manually clear an alarm. Normally an alarm is cleared by the application that
 raised the alarm, but in some cases that is not done, e.g. if the alarms are
@@ -79,15 +79,15 @@ and the entity `"/dev/hda1"` and the additional information could be `"90%"`.
 For an operator it is useful to have some additional information when handling
 the alarms. This information includes, `"severity"` how serious is the alarm,
 `"probable_cause"` what is the likely reason for the alarm,
-`"proposed_repair_action"` how can I fix the problem. In elarm it is possible to
+`"proposed_repair_action"` how can I fix the problem. In Elarm it is possible to
 add this information to the alarms by adding configuration data for an alarm. If
 no configuration data is found when an alarm is raised, default data is used.
 The default data is defined in the `elarm.app` file and can be overridden by
 data in `sys.config`.
 
-To know which alarms need configuration data elarm is recording all alarms that
+To know which alarms need configuration data Elarm is recording all alarms that
 have been raised for which there is no configuration. It is possible to query
-elarm for a list of alarms that are missing configuration using
+Elarm for a list of alarms that are missing configuration using
 `elarm:get_unconfigured/0,1`. Alarm configuration can be added via
 `elarm:add_configuration/2`.
 
@@ -95,10 +95,10 @@ elarm for a list of alarms that are missing configuration using
 
 ## Starting ##
 
-When elarm is started it starts one instance of the alarm manager, with the name
+When Elarm is started it starts one instance of the alarm manager, with the name
 `elarm_server`. It is possible to run several alarm managers at once. By putting
 an environment variable named `servers` in the system configuration file, with
-the value a list of tuples `{ServerName, Opts}`, elarm will start one alarm
+the value a list of tuples `{ServerName, Opts}`, Elarm will start one alarm
 manager for each tuple. It is also possible to manually start a new alarm
 manager using `elarm:start_server(Name, Opts)`.
 
