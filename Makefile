@@ -1,3 +1,7 @@
+.PHONY: all get_deps upd_deps compile clean test dialyzer build_plt
+
+all: get_deps compile
+
 get_deps:
 	rebar get-deps
 
@@ -17,4 +21,4 @@ dialyzer: compile
 	dialyzer --plt .plt --no_native ebin
 
 build_plt:
-	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel 
+	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel
