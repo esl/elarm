@@ -15,7 +15,7 @@ clean:
 	rebar clean
 
 test:
-	rebar eunit
+	rebar eunit apps=elarm
 
 dialyzer: compile
 	dialyzer --plt .plt --no_native ebin
