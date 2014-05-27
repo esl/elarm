@@ -24,7 +24,8 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/2]).
+-export([start_link/2,
+         which_summary_sup/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -42,6 +43,12 @@
 %%--------------------------------------------------------------------
 start_link(Name, Opts) ->
     supervisor:start_link(?MODULE, [Name, Opts]).
+
+%% Get the pid of the alarm summary supervisor for the alarm server
+which_summary_sup(ManagerSupPid) ->
+    Children = supervisor:which_children(ManagerSupPid),
+    [Pid] = [Pid || {_, Pid, _, [elarm_summary_sup]} <- Children],
+    {ok, Pid}.
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -63,7 +70,7 @@ init([Name, Opts]) ->
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-    {ok, {SupFlags, [alarm_server_spec(Name, Opts), summary_sup_spec(Name)]}}.
+    {ok, {SupFlags, [alarm_server_spec(Name, Opts), summary_sup_spec()]}}.
 
 %%%===================================================================
 %%% Internal functions
@@ -72,6 +79,6 @@ alarm_server_spec(Name, Opts) ->
     {Name, {elarm_server, start_link, [Name, Opts]},
      permanent, 2000, worker, [elarm_server]}.
 
-summary_sup_spec(Name) ->
-    {summary_sup, {elarm_summary_sup, start_link, [Name]},
+summary_sup_spec() ->
+    {summary_sup, {elarm_summary_sup, start_link, []},
      permanent, 2000, supervisor, [elarm_summary_sup]}.

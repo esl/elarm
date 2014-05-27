@@ -24,7 +24,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/1,
+-export([start_link/0,
          start_child/2]).
 
 %% Supervisor callbacks
@@ -41,12 +41,14 @@
 %% Starts the supervisor
 %% @end
 %%--------------------------------------------------------------------
-start_link(Name) ->
-    supervisor:start_link(?MODULE, [Name]).
+start_link() ->
+    supervisor:start_link(?MODULE, []).
 
 start_child(AlarmServer, Filter) ->
-    Super = gproc:lookup_local_name({elarm_summary_sup, AlarmServer}),
-    supervisor:start_child(Super, [self(), AlarmServer, Filter]).
+    Servers = elarm_man_sup_sup:which_servers(),
+    {AlarmServer, ManagerSupPid} = lists:keyfind(AlarmServer, 1, Servers),
+    {ok, ServerSummarySupPid} = elarm_man_sup:which_summary_sup(ManagerSupPid),
+    supervisor:start_child(ServerSummarySupPid, [self(), AlarmServer, Filter]).
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -61,8 +63,7 @@ start_child(AlarmServer, Filter) ->
 %% specifications.
 %% @end
 %%--------------------------------------------------------------------
-init([Name]) ->
-    gproc:add_local_name({elarm_summary_sup, Name}),
+init([]) ->
     RestartStrategy = simple_one_for_one,
     MaxRestarts = 1000,
     MaxSecondsBetweenRestarts = 3600,
