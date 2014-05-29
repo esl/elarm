@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Anders Nygren <anders.nygren@erlang-solutions.com>
-%%% @copyright (C) 2013, Erlang Solution Ltd.
+%%% @copyright (C) 2013, Erlang Solutions Ltd.
 %%% Created : 26 Jul 2013 by Anders Nygren <erlang-solutions.com>
 %%%-------------------------------------------------------------------
 
