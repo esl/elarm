@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Richard Jonas <richard.jonas@erlang-solutions.com>
-%%% @copyright (C) 2014, Erlang Solution Ltd.
+%%% @copyright (C) 2014, Erlang Solutions Ltd.
 %%%-------------------------------------------------------------------
 -module(elarm_subscr).
 
