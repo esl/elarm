@@ -174,7 +174,7 @@ Alarm Summary gives a summary of the presence or absence of unacknowledged and
 acknowledged alarms of the various severities. This is useful for e.g. show the
 status on maps or other overview user interfaces.
 
-To start a subscription use `elarm:summary_subscription(Server, Filter)`.
+To start a subscription use `elarm:subscribe_summary(Server, Filter)`.
 
 Filter is the same as for alarm list subscriptions. Every time the summary
 changes a message will be received.
