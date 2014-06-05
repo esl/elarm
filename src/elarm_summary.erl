@@ -233,7 +233,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 get_severity(AlarmId, AlarmSrc, Alarms) ->
-    {_Severity, _State} = get_alarm(AlarmId, AlarmSrc, Alarms).
+    {Severity, _State} = get_alarm(AlarmId, AlarmSrc, Alarms),
+    Severity.
 
 new_alarms() ->
     dict:new().
