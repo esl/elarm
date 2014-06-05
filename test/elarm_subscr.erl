@@ -17,7 +17,8 @@ all_test_() ->
       {"raise/clear test", fun raise_clear/0},
       {"ack/unack test", fun raise_ack_unack/0},
       {"comment test", fun comment/0},
-      {"manual clear test", fun manual_clear/0}
+      {"manual clear test", fun manual_clear/0},
+      {"subscribe summary test", fun subscribe_summary/0}
      ]}.
 
 setup() ->
@@ -114,3 +115,7 @@ manual_clear() ->
     end,
 
     elarm:unsubscribe(Ref).
+
+subscribe_summary() ->
+    {ok, _Ref} = elarm:subscribe_summary([all]),
+    ok.
