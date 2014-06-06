@@ -43,7 +43,7 @@
 -define(SERVER, ?MODULE).
 
 -record(state, {
-          servers = []      :: [{atom(), pid()}],   %% ServerName & Pid
+          servers           :: [{atom(), pid()}],   %% ServerName & Pid
           subscribers = []  :: [{pid(), reference()}]
          }).
 
@@ -53,7 +53,7 @@
 
 %%%-------------------------------------------------------------------
 %%% @doc
-%%% Start elarm registry server with {local, elarm_registy} name.
+%%% Start elarm registry server with {local, elarm_registry} name.
 %%% @end
 %%%-------------------------------------------------------------------
 -spec start_link() -> {ok, pid()} | {error, term()}.
@@ -122,7 +122,7 @@ server_stopped(Name) ->
 %%%===================================================================
 
 init(_) ->
-    {ok, #state{}}.
+    {ok, #state{servers = elarm_man_sup_sup:which_servers()}}.
 
 handle_call({subscribe, Pid}, _From, State) ->
     {reply, {ok, State#state.servers}, handle_subscribe(Pid, State)};
