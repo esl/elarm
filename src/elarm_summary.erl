@@ -23,8 +23,8 @@
 %%%
 %%% Each process that wants to know about changes in this summary can subscribe
 %%% to getting alarm summaries by calling `elarm:subscribe_summary(Server,
-%%% Filter)`. This will start an `elarm_summary` process (under an
-%%% `elarm_summary_sup` supervisor), which subscribes to alarms, and notifies
+%%% Filter)'. This will start an `elarm_summary' process (under an
+%%% `elarm_summary_sup' supervisor), which subscribes to alarms, and notifies
 %%% its subscribers about the updated summary when it receives an alarm.
 %%% @end
 %%%

@@ -5,6 +5,9 @@ all: get_deps compile
 get_deps:
 	rebar get-deps
 
+doc:
+	rebar doc
+
 upd_deps:
 	rebar upd-deps
 
