@@ -53,7 +53,7 @@
 
 %%%-------------------------------------------------------------------
 %%% @doc
-%%% Start elarm registry server with {local, elarm_registy} name.
+%%% Start elarm registry server with {local, elarm_registry} name.
 %%% @end
 %%%-------------------------------------------------------------------
 -spec start_link() -> {ok, pid()} | {error, term()}.
