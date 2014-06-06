@@ -13,6 +13,8 @@
 all_test_() ->
     {setup, local, fun setup/0, fun teardown/1,
      [
+      {"list servers test (internal)", fun which_servers_internal/0},
+      {"list servers test", fun which_servers/0},
       {"subscribe test", fun subscribe/0},
       {"raise/clear test", fun raise_clear/0},
       {"ack/unack test", fun raise_ack_unack/0},
@@ -30,6 +32,14 @@ teardown(_) ->
     elarm:stop_server(elarm1),
     application:stop(elarm),
     application:stop(gproc).
+
+which_servers_internal() ->
+    ?assertMatch([{elarm1,_}, {elarm_server,_}],
+                 lists:sort(elarm_sup:which_servers())).
+
+which_servers() ->
+    ?assertMatch([{elarm1,_}, {elarm_server,_}],
+                 lists:sort(elarm:which_servers())).
 
 subscribe() ->
     {ok, Ref, _} = elarm:subscribe([all], self()),
