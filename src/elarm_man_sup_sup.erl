@@ -60,8 +60,14 @@ stop_server(Name) ->
 
 %% Get a list of all servers running
 which_servers() ->
+    Children =
+        case whereis(?SERVER) of
+            undefined ->             [];
+            SupPid when is_pid(SupPid) ->
+                supervisor:which_children(?SERVER)
+        end,
     [{Name, Pid}
-     || {Name, Pid, _, [elarm_man_sup]} <- supervisor:which_children(?SERVER)].
+     || {Name, Pid, _, [elarm_man_sup]} <- Children].
 
 %%%===================================================================
 %%% Supervisor callbacks
