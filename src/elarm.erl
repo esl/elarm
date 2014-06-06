@@ -90,7 +90,7 @@ start_server(Opts) when is_list(Opts) ->
 -spec start_server(atom(), proplists:proplist()) -> {ok, pid()} |
                                                     {error, term()}.
 start_server(Name, Opts) ->
-    elarm_sup:start_server(Name, Opts).
+    elarm_man_sup_sup:start_server(Name, Opts).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -109,7 +109,7 @@ stop_server() ->
 %%--------------------------------------------------------------------
 -spec stop_server(atom()) -> ok | {error, term()}.
 stop_server(Name) ->
-    elarm_sup:stop_server(Name).
+    elarm_man_sup_sup:stop_server(Name).
 
 %%--------------------------------------------------------------------
 %% @doc

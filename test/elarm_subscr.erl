@@ -35,7 +35,7 @@ teardown(_) ->
 
 which_servers_internal() ->
     ?assertMatch([{elarm1,_}, {elarm_server,_}],
-                 lists:sort(elarm_sup:which_servers())).
+                 lists:sort(elarm_man_sup_sup:which_servers())).
 
 which_servers() ->
     ?assertMatch([{elarm1,_}, {elarm_server,_}],
