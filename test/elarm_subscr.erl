@@ -11,7 +11,7 @@
 -endif.
 
 all_test_() ->
-    {setup, local, fun setup/0, fun teardown/1,
+    {foreach, fun setup/0, fun teardown/1,
      [
       {"list servers test (internal)", fun which_servers_internal/0},
       {"list servers test", fun which_servers/0},
