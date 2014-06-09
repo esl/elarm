@@ -63,12 +63,12 @@ init([Name, Opts]) ->
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-    {ok, {SupFlags, [alarm_manager_spec(Name, Opts), summary_sup_spec(Name)]}}.
+    {ok, {SupFlags, [alarm_server_spec(Name, Opts), summary_sup_spec(Name)]}}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-alarm_manager_spec(Name, Opts) ->
+alarm_server_spec(Name, Opts) ->
     {Name, {elarm_server, start_link, [Name, Opts]},
      permanent, 2000, worker, [elarm_server]}.
 
