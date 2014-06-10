@@ -80,7 +80,7 @@
 start_server(Name) when is_atom(Name)->
     start_server(Name, []);
 start_server(Opts) when is_list(Opts) ->
-    start_server(elarm_server, []).
+    start_server(elarm_server, Opts).
 
 %%--------------------------------------------------------------------
 %% @doc
