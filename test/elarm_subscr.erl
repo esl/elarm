@@ -127,5 +127,9 @@ manual_clear() ->
     elarm:unsubscribe(Ref).
 
 subscribe_summary() ->
-    {ok, _Ref} = elarm:subscribe_summary([all]),
+    {ok, Ref} = elarm:subscribe_summary([all]),
+    receive
+        {elarm, Ref, #alarm_summary{}} ->
+            ok
+    end,
     ok.

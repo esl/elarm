@@ -107,13 +107,14 @@ get_ref(Pid) ->
 %%--------------------------------------------------------------------
 init([Client, AlarmServer, Filter]) ->
     MRef = monitor(process, Client),
-    {ok, Ref, AlarmList} = elarm_server:subscribe(AlarmServer, Filter, self()),
+    {ok, AlRef, AlarmList} = elarm_server:subscribe(AlarmServer, Filter, self()),
     {Summary, Alarms} = process_alarmlist(AlarmList),
+    Ref = make_ref(),
     NewStatus = maybe_send_event(Ref, Client, Summary, undefined),
     {ok, #state{ client = Client,
-                 ref = make_ref(),
+                 ref = Ref,
                  mref = MRef,
-                 alarmlist_ref = Ref,
+                 alarmlist_ref = AlRef,
                  status = NewStatus,
                  alarms = Alarms,
                  summary = Summary }}.
