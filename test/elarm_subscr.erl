@@ -24,14 +24,12 @@ all_test_() ->
      ]}.
 
 setup() ->
-    application:start(gproc),
-    application:start(elarm),
-    elarm:start_server(elarm1, []).
+    ok = application:start(elarm),
+    {ok, _} = elarm:start_server(elarm1, []).
 
 teardown(_) ->
-    elarm:stop_server(elarm1),
-    application:stop(elarm),
-    application:stop(gproc).
+    ok = elarm:stop_server(elarm1),
+    ok = application:stop(elarm).
 
 which_servers_internal() ->
     ?assertMatch([{elarm1,_}, {elarm_server,_}],

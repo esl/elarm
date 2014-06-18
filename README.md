@@ -18,9 +18,7 @@ But it can also be started quickly from an Erlang shell:
     $ cd elarm
     $ make
     [...]
-    $ erl -pa ebin -pa deps/gproc/ebin
-    > application:start(gproc).
-    ok
+    $ erl -pa ebin
     > application:start(elarm).
     ok
     > elarm:raise(partition_full, "/dev/hda2", [{level,90}]).
