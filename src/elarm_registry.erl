@@ -131,7 +131,7 @@ handle_call({unsubscribe, Pid}, _From, State) ->
 handle_call(which_servers, _From, State) ->
     {reply, State#state.servers, State};
 handle_call(Req, _From, State) ->
-    lager:debug("Unsupported call: ~p", [Req]),
+    %% lager:debug("Unsupported call: ~p", [Req]),
     {reply, {error, {unsupported, Req}}, State}.
 
 handle_cast({elarm_started, Name, Pid}, State) ->
@@ -154,7 +154,7 @@ handle_info({'DOWN', _MRef, _Type, Pid, _Info}, State) ->
     %% An external subscriber went down
     {noreply, handle_unsubscribe(Pid, State)};
 handle_info(Info, State) ->
-    lager:debug("Unknown message ~p", [Info]),
+    %% lager:debug("Unknown message ~p", [Info]),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
