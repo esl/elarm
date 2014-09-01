@@ -123,6 +123,7 @@ add_comment(Pid, AlarmId, AlarmSrc, Text, UserId) ->
 manual_clear(Pid, AlarmId, AlarmSrc, UserId) ->
     gen_server:call(Pid, {manual_clear, AlarmId, AlarmSrc, UserId}).
 
+-spec get_alarms(pid()|atom()) -> {ok, [alarm()]} | {error, term()}.
 get_alarms(Pid) ->
     gen_server:call(Pid, get_alarms).
 

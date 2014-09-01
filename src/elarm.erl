@@ -372,7 +372,7 @@ read_log(Srv, Filter) ->
 %% @equiv get_alarms(elarm_server)
 %% @end
 %%--------------------------------------------------------------------
--spec get_alarms() -> [alarm()].
+-spec get_alarms() -> {ok, [alarm()]} | {error, term()}.
 get_alarms() ->
     get_alarms(elarm_server).
 
@@ -381,7 +381,7 @@ get_alarms() ->
 %% Get all currently active alarms.
 %% @end
 %%--------------------------------------------------------------------
--spec get_alarms(pid()|atom()) -> [alarm()].
+-spec get_alarms(pid()|atom()) -> {ok, [alarm()]} | {error, term()}.
 get_alarms(Srv) ->
     elarm_server:get_alarms(Srv).
 
@@ -402,7 +402,8 @@ get_alarm_by_id(EventId) ->
 %%--------------------------------------------------------------------
 -spec get_alarm_by_id(pid()|atom(), event_id()) -> alarm() | undefined.
 get_alarm_by_id(Srv, EventId) ->
-    case [A || A <- get_alarms(Srv), A#alarm.event_id =:= EventId] of
+    {ok, As} = get_alarms(Srv),
+    case [A || A <- As, A#alarm.event_id =:= EventId] of
         [Alarm] ->
             Alarm;
         _ ->
