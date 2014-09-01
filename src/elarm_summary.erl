@@ -243,9 +243,6 @@ new_alarms() ->
 add_alarm(Id, Src, Severity, State, Alarms) ->
     dict:store({Id,Src}, {Severity, State}, Alarms).
 
-update_alarm(Id, Src, Severity, State, Alarms) ->
-    dict:store({Id,Src}, {Severity, State}, Alarms).
-
 get_alarm(Id, Src, Alarms) ->
     dict:fetch({Id,Src},Alarms).
 
