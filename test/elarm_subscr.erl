@@ -5,10 +5,7 @@
 -module(elarm_subscr).
 
 -include_lib("elarm/include/elarm.hrl").
-
--ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
--endif.
 
 all_test_() ->
     {foreach, fun setup/0, fun teardown/1,
