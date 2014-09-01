@@ -153,7 +153,7 @@ handle_info({'DOWN', _MRef, _Type, {Name, Node}, _Info}, State)
 handle_info({'DOWN', _MRef, _Type, Pid, _Info}, State) ->
     %% An external subscriber went down
     {noreply, handle_unsubscribe(Pid, State)};
-handle_info(Info, State) ->
+handle_info(_Info, State) ->
     %% lager:debug("Unknown message ~p", [Info]),
     {noreply, State}.
 
