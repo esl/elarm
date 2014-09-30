@@ -32,6 +32,7 @@
          raise/4,
          clear/2,
          clear/3,
+         clear/4,
          subscribe/2,
          subscribe/3,
          subscribe_summary/1,
@@ -146,21 +147,31 @@ raise(Srv, Id, Src, AddInfo) ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Clear an alarm
-%% @equiv clear(elarm_server, Id, Src)
+%% @equiv clear(elarm_server, Id, Src, ok)
 %% @end
 %%--------------------------------------------------------------------
 -spec clear(alarm_id(), alarm_src()) -> ok.
 clear(Id, Src) ->
-    clear(elarm_server, Id, Src).
+    clear(elarm_server, Id, Src, ok).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Clear an alarm
+%% @equiv clear(Srv, Id, Src, ok)
+%% @end
+%%--------------------------------------------------------------------
+-spec clear(pid()|atom(), alarm_id(), alarm_src()) -> ok.
+clear(Srv, Id, Src) ->
+    clear(Srv, Id, Src, ok).
 
 %%--------------------------------------------------------------------
 %% @doc
 %% Clear an alarm
 %% @end
 %%--------------------------------------------------------------------
--spec clear(pid()|atom(), alarm_id(), alarm_src()) -> ok.
-clear(Srv, Id, Src) ->
-    elarm_server:clear(Srv, Id, Src).
+-spec clear(pid()|atom(), alarm_id(), alarm_src(), clear_reason()) -> ok.
+clear(Srv, Id, Src, Reason) ->
+    elarm_server:clear(Srv, Id, Src, Reason).
 
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm status
@@ -345,7 +356,7 @@ manual_clear(AlarmId, AlarmSrc, UserId) ->
 -spec manual_clear(pid()|atom(), alarm_id(), alarm_src(), user_id()) ->
                                                         ok | {error, term()}.
 manual_clear(Srv, AlarmId, AlarmSrc, UserId) ->
-    elarm_server:manual_clear(Srv, AlarmId, AlarmSrc, UserId).
+    clear(Srv, AlarmId, AlarmSrc, {manual, UserId}).
 
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm log

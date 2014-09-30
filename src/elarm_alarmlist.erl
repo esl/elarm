@@ -29,7 +29,6 @@
          unacknowledge/4,
          add_comment/4,
          clear/3,
-         manual_clear/2,
          get_alarm/2,
          get_alarm/3,
          get_alarms/1]).
@@ -104,19 +103,6 @@ clear(AlarmId, Src,
     true = ets:delete(EventIds, EventId),
     true = ets:delete(AList, Key),
     {ok, State}.
-
-%% Manually clear an alarm
--spec manual_clear(event_id(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
-manual_clear(EventId,
-      #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
-    case ets:lookup(EventIds, EventId) of
-        [{EventId, Key}] ->
-            true = ets:delete(EventIds, EventId),
-            true = ets:delete(AList, Key),
-            {ok, State};
-        [] ->
-            {error, not_active}
-    end.
 
 -spec get_alarm(event_id(), #al_state{}) ->
           {{ok, alarm()}, #al_state{}} | {{error, not_active}, #al_state{}}.
@@ -193,10 +179,7 @@ add_alarm() ->
     ?assertEqual({{error, not_active}, State}, get_alarm(full, disk1, State)),
 
     ?assertEqual({ok,State}, new_alarm(one_alarm(), State)),
-    ?assertEqual({{ok, Alarm1},State}, get_alarm(full, disk1, State)),
-
-    ?assertEqual({ok, State}, manual_clear({1375,396050,79296}, State)),
-    ?assertEqual({{error, not_active}, State}, get_alarm(full, disk1, State)).
+    ?assertEqual({{ok, Alarm1},State}, get_alarm(full, disk1, State)).
 
 
 setup() ->

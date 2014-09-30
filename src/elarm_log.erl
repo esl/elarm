@@ -29,7 +29,7 @@
          acknowledge/3,
          unacknowledge/3,
          add_comment/3,
-         clear/2, clear/3,
+         clear/3,
          search/2]).
 
 -include_lib("eunit/include/eunit.hrl").
@@ -74,14 +74,8 @@ add_comment(_Alarm, _Comment, State) ->
     {ok, State}.
 
 %% Automatically clear an alarm
--spec clear(alarm(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
-clear(_Alarm, State) ->
-    {ok, State}.
-
-%% Manually clear an alarm
--spec clear(alarm(), user_id(), #log_state{}) ->
-          {ok, #log_state{}} | {error, term()}.
-clear(_Alarm, _UserId, State) ->
+-spec clear(alarm(), clear_reason(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
+clear(_Alarm, _Reason, State) ->
     {ok, State}.
 
 %% search the log

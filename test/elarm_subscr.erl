@@ -14,6 +14,7 @@ all_test_() ->
       {"list servers test", fun which_servers/0},
       {"subscribe test", fun subscribe/0},
       {"raise/clear test", fun raise_clear/0},
+      {"raise/clear with reason test", fun raise_clear_with_reason/0},
       {"ack/unack test", fun raise_ack_unack/0},
       {"comment test", fun comment/0},
       {"manual clear test", fun manual_clear/0},
@@ -55,7 +56,7 @@ raise_clear() ->
 
     elarm:clear(too_hot, "cpu1"),
     receive
-        {elarm, _, {clear, too_hot, "cpu1", _}} ->
+        {elarm, _, {clear, too_hot, "cpu1", _, _Reason = ok}} ->
             ok
     end,
 
@@ -63,7 +64,26 @@ raise_clear() ->
     lists:all(fun(#alarm{alarm_id = Id, src = Src}) ->
                       not(Id =:= too_hot andalso Src =:= "cpu1")
               end, Alarms),
+    elarm:unsubscribe(Ref).
 
+raise_clear_with_reason() ->
+    {ok, Ref, _} = elarm:subscribe([all], self()),
+    elarm:raise(too_hot, "cpu1", []),
+    receive
+        {elarm, _, #alarm{alarm_id = too_hot, src = "cpu1"}} ->
+            ok
+    end,
+
+    elarm:clear(elarm_server, too_hot, "cpu1", source_gone),
+    receive
+        {elarm, _, {clear, too_hot, "cpu1", _, _Reason = source_gone}} ->
+            ok
+    end,
+
+    {ok, Alarms} = elarm:get_alarms(),
+    lists:all(fun(#alarm{alarm_id = Id, src = Src}) ->
+                      not(Id =:= too_hot andalso Src =:= "cpu1")
+              end, Alarms),
     elarm:unsubscribe(Ref).
 
 raise_ack_unack() ->
@@ -115,7 +135,7 @@ manual_clear() ->
     elarm:manual_clear(bad_disk, "sda", <<"admin">>),
 
     receive
-        {elarm, _, {manual_clear, bad_disk, "sda", _, <<"admin">>}} ->
+        {elarm, _, {clear, bad_disk, "sda", _, {manual, <<"admin">>}}} ->
             ok
     end,
 
