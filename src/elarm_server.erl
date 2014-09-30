@@ -26,13 +26,12 @@
 %% API
 -export([start_link/2,
          raise/4,
-         clear/3,
+         clear/4,
          subscribe/3,
          unsubscribe/2,
          acknowledge/4,
          unacknowledge/4,
          add_comment/5,
-         manual_clear/4,
          get_alarms/1,
          read_log/2,
          get_configured/1,
@@ -81,9 +80,9 @@ raise(Pid, Id, Src, AddInfo) ->
     gen_server:call(Pid, {raise, Id, Src, AddInfo}).
 
 %% Clear an alarm
--spec clear(pid()|atom(), alarm_id(), alarm_src()) -> ok.
-clear(Pid, Id, Src) ->
-    gen_server:call(Pid, {clear, Id, Src}).
+-spec clear(pid()|atom(), alarm_id(), alarm_src(), clear_reason()) -> ok.
+clear(Pid, Id, Src, Reason) ->
+    gen_server:call(Pid, {clear, Id, Src, Reason}).
 
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm status
@@ -116,12 +115,6 @@ unacknowledge(Pid, AlarmId, AlarmSrc, UserId) ->
                                                         ok | {error, term()}.
 add_comment(Pid, AlarmId, AlarmSrc, Text, UserId) ->
     gen_server:call(Pid, {add_comment, AlarmId, AlarmSrc, Text, UserId}).
-
-%% Manually clear an alarm
--spec manual_clear(pid()|atom(), alarm_id(), alarm_src(), user_id()) ->
-                                                        ok | {error, term()}.
-manual_clear(Pid, AlarmId, AlarmSrc, UserId) ->
-    gen_server:call(Pid, {manual_clear, AlarmId, AlarmSrc, UserId}).
 
 -spec get_alarms(pid()|atom()) -> {ok, [alarm()]} | {error, term()}.
 get_alarms(Pid) ->
@@ -196,8 +189,8 @@ init([Name, Opts]) ->
 handle_call({raise, AlarmId, Src, AddInfo}, _From, State) ->
     {Reply, NewState} = handle_raise(AlarmId, Src, AddInfo, State),
     {reply, Reply, NewState};
-handle_call({clear, AlarmId, Src}, _From, State) ->
-    {Reply, NewState} = handle_clear(AlarmId, Src, State),
+handle_call({clear, AlarmId, Src, Reason}, _From, State) ->
+    {Reply, NewState} = handle_clear(AlarmId, Src, Reason, State),
     {reply, Reply, NewState};
 handle_call({subscribe, Pid, Filter}, _From, State) ->
     {Reply, NewState} = handle_subscribe(Pid, Filter, State),
@@ -213,9 +206,6 @@ handle_call({unacknowledge, AlarmId, AlarmSrc, UserId}, _From, State) ->
     {reply, Reply, NewState};
 handle_call({add_comment, AlarmId, AlarmSrc, Text, UserId}, _From, State) ->
     {Reply, NewState} = handle_comment(AlarmId, AlarmSrc, Text, UserId, State),
-    {reply, Reply, NewState};
-handle_call({manual_clear, AlarmId, AlarmSrc, UserId}, _From, State) ->
-    {Reply, NewState} = handle_manual_clear(AlarmId, AlarmSrc, UserId, State),
     {reply, Reply, NewState};
 handle_call(get_alarms, _From, State) ->
     {Reply, NewState} = handle_get_alarms(State),
@@ -416,7 +406,7 @@ update_repeat_alarmlist(Alarm, AlCB, AlState) ->
 send_repeat_events(Alarm, EventCB, EventState) ->
     EventCB:repeat_alarm(Alarm, EventState).
 
-handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
+handle_clear(AlarmId, Src, Reason, #state{ alarmlist_cb = AlCB,
                                    alarmlist_state = AlState,
                                    event_cb = EvtCB,
                                    event_state = EvtState,
@@ -424,10 +414,10 @@ handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
                                    log_state = LogState } = State) ->
     case AlCB:get_alarm(AlarmId, Src, AlState) of
         {{ok, #alarm{ event_id = EventId } = Alarm}, AlState1} ->
-            {ok, NewLogState} = log_clear(Alarm, LogCB, LogState),
+            {ok, NewLogState} = log_clear(Alarm, Reason, LogCB, LogState),
             {ok, NewAlState} = alarmlist_clear(AlarmId, Src, AlCB, AlState1),
             {ok, NewEvtState} = send_clear_events(AlarmId, Src, EventId,
-                                                  EvtCB, EvtState),
+                                                  Reason, EvtCB, EvtState),
             {ok, State#state{ alarmlist_state = NewAlState,
                               event_state = NewEvtState,
                               log_state = NewLogState }};
@@ -435,14 +425,14 @@ handle_clear(AlarmId, Src, #state{ alarmlist_cb = AlCB,
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
-log_clear(Alarm, LogCB, LogState) ->
-    LogCB:clear(Alarm, LogState).
+log_clear(Alarm, Reason, LogCB, LogState) ->
+    LogCB:clear(Alarm, Reason, LogState).
 
 alarmlist_clear(AlarmId, Src, AlCB, AlState) ->
     AlCB:clear(AlarmId, Src, AlState).
 
-send_clear_events(AlarmId, Src, EventId, EvtCB, EvtState) ->
-    EvtCB:clear(AlarmId, Src, EventId, EvtState).
+send_clear_events(AlarmId, Src, EventId, Reason, EvtCB, EvtState) ->
+    EvtCB:clear(AlarmId, Src, EventId, Reason, EvtState).
 
 handle_acknowledge(AlarmId, Src, UserId,
                    #state{ alarmlist_cb = AlCB,
@@ -547,37 +537,6 @@ alarmlist_comment(AlarmId, Src, Comment, AlCB, AlState) ->
 
 send_comment_events(AlarmId, Src, Comment, EventId, EvtCB, EvtState) ->
     EvtCB:add_comment(AlarmId, Src, EventId, Comment, EvtState).
-
-handle_manual_clear(AlarmId, AlarmSrc, UserId,
-                    #state{ alarmlist_cb = AlCB,
-                            alarmlist_state = AlState,
-                            event_cb = EvtCB,
-                            event_state = EvtState,
-                            log_cb = LogCB,
-                            log_state = LogState } = State) ->
-    case AlCB:get_alarm(AlarmId, AlarmSrc, AlState) of
-        {{ok, #alarm{event_id = EventId} = Alarm}, AlState1} ->
-            {ok, NewLogState} = log_manual_clear(Alarm, UserId, LogCB,
-                                                 LogState),
-            {ok, NewAlState} = alarmlist_manual_clear(EventId, AlCB, AlState1),
-            {ok, NewEvtState} = send_manual_clear_events(AlarmId, AlarmSrc,
-                                                         EventId, UserId,
-                                                         EvtCB, EvtState),
-            {ok, State#state{ alarmlist_state = NewAlState,
-                              event_state = NewEvtState,
-                              log_state = NewLogState }};
-        {Error, NewAlState} ->
-            {Error, State#state{ alarmlist_state = NewAlState}}
-    end.
-
-log_manual_clear(Alarm, UserId, LogCB, LogState) ->
-    LogCB:clear(Alarm, UserId, LogState).
-
-alarmlist_manual_clear(EventId, AlCB, AlState) ->
-    AlCB:manual_clear(EventId, AlState).
-
-send_manual_clear_events(AlarmId, AlarmSrc, EventId, UserId, EvtCB, EvtState) ->
-    EvtCB:manual_clear(AlarmId, AlarmSrc, EventId, UserId, EvtState).
 
 handle_get_alarms(#state{ alarmlist_cb = AlCB,
                           alarmlist_state = AlState} = State) ->

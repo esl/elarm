@@ -156,11 +156,11 @@ The format of the messages are:
 
 * cleared alarm:
 
-        {elarm, Ref, {clear, alarm_id(), alarm_src(), event_id()}}
+        {elarm, Ref, {clear, alarm_id(), alarm_src(), event_id(), Reason :: ok | source_gone | term()}}
 
 * manual cleared alarm:
 
-        {elarm, Ref, {manual_clear, alarm_id(), alarm_src(), event_id(), user_id()}}
+        {elarm, Ref, {manual_clear, alarm_id(), alarm_src(), event_id(), {manual, user_id()}}}
 
 * comment added:
 

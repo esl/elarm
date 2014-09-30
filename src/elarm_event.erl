@@ -30,8 +30,7 @@
          acknowledge/5,
          unacknowledge/5,
          add_comment/5,
-         clear/4,
-         manual_clear/5,
+         clear/5,
          handle_down/2,
          filter_alarms/2]).
 
@@ -112,17 +111,8 @@ add_comment(AlarmId, Src, EventId, Comment,
 
 %% Automatically clear an alarm
 
-clear(AlarmId, Src, EventId, #evt_state{ subs = Subs } =  State) ->
-    Event = {clear, AlarmId, Src, EventId},
-    send_events(Event, Subs),
-    {ok, State}.
-
-%% Manually clear an alarm
--spec manual_clear(alarm_id(), alarm_src(), event_id(), user_id(),
-                   #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
-manual_clear(AlarmId, AlarmSrc, EventId, UserId,
-             #evt_state{ subs = Subs } =  State) ->
-    Event = {manual_clear, AlarmId, AlarmSrc, EventId, UserId},
+clear(AlarmId, Src, EventId, Reason, #evt_state{ subs = Subs } =  State) ->
+    Event = {clear, AlarmId, Src, EventId, Reason},
     send_events(Event, Subs),
     {ok, State}.
 

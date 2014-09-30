@@ -15,6 +15,7 @@
 -type alarm_id()               :: term().
 -type alarm_type()             :: communication | qos | processing | equipment | environment.
 -type alarm_src()              :: term().
+-type clear_reason()           :: ok | {manual, UserId ::term()} | source_gone.
 -type timestamp()              :: calendar:datetime().
 -type event_id()               :: tuple(). %% FIXME binary(). %% This must be globally unique
 -type severity()               :: critical | major | minor | warning | indeterminate | cleared.
