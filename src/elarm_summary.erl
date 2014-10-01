@@ -351,4 +351,3 @@ clear_alarm(AlarmId, AlarmSrc, Summary, Alarms) ->
     NewSummary = decrement_count(Summary, Severity, State),
     NewAlarms = delete_alarm(AlarmId, AlarmSrc, Alarms),
     {NewSummary, NewAlarms}.
-
