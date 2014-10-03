@@ -1,4 +1,4 @@
-.PHONY: all get_deps upd_deps compile clean test dialyzer build_plt
+.PHONY: all get_deps upd_deps compile clean purge test dialyzer build_plt
 
 all: get_deps compile
 
@@ -25,3 +25,6 @@ dialyzer: compile
 
 build_plt:
 	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel eunit ; [ -f ".plt" ]
+
+purge:
+	git ls-files -o --directory | xargs -r rm -r
