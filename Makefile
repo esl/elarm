@@ -24,4 +24,4 @@ dialyzer: compile
 	dialyzer --plt .plt --no_native ebin
 
 build_plt:
-	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel
+	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel eunit ; [ -f ".plt" ]
