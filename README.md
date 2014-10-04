@@ -1,7 +1,5 @@
-elarm
+Elarm [![Build Status](https://travis-ci.org/esl/elarm.svg?branch=master)](https://travis-ci.org/esl/elarm)
 =====
-
-# Introduction #
 
 Elarm is an Alarm Manager for Erlang. It is designed to be easy to include in an
 Erlang based system. Most functions are implemented through plugins so it is
@@ -104,11 +102,15 @@ manager using `elarm:start_server(Name, Opts)`.
 
 An application wanting to raise an alarm just have to call
 
-    ok = elarm:raise(partition_full, "/dev/hda2", [{level,90}])
+```Erlang
+ok = elarm:raise(partition_full, "/dev/hda2", [{level,90}])
+```
 
 and to clear it
 
-    ok = elarm:clear(partition_full, "/dev/hda2")
+```Erlang
+ok = elarm:clear(partition_full, "/dev/hda2")
+```
 
 So `Name` and `Entity` uniquely identify an alarm.
 
@@ -143,28 +145,34 @@ one is tried and if one matches then the filter matches.
 The format of the messages are:
 
 * new alarm:
-
-        {elarm, Ref, alarm()}
+	```Erlang
+	{elarm, Ref, alarm()}
+	```
 
 * acknowledged alarm:
-
-        {elarm, Ref, {ack, alarm_id(), alarm_src(), event_id(), ack_info()}}
+	```Erlang
+	{elarm, Ref, {ack, alarm_id(), alarm_src(), event_id(), ack_info()}}
+	```
 
 * unacknowledged alarm:
-
-        {elarm, Ref, {unack, alarm_id(), alarm_src(), event_id(), ack_info()}}
+	```Erlang
+	{elarm, Ref, {unack, alarm_id(), alarm_src(), event_id(), ack_info()}}
+	```
 
 * cleared alarm:
-
-        {elarm, Ref, {clear, alarm_id(), alarm_src(), event_id(), Reason :: ok | source_gone | term()}}
+	```Erlang
+	{elarm, Ref, {clear, alarm_id(), alarm_src(), event_id(), Reason :: ok | source_gone | term()}}
+	```
 
 * manual cleared alarm:
-
-        {elarm, Ref, {manual_clear, alarm_id(), alarm_src(), event_id(), {manual, user_id()}}}
+	```Erlang
+	{elarm, Ref, {manual_clear, alarm_id(), alarm_src(), event_id(), {manual, user_id()}}}
+	```
 
 * comment added:
-
-        {elarm, Ref, {add_comment, alarm_id(), alarm_src(), event_id, comment()}}
+	```Erlang
+	{elarm, Ref, {add_comment, alarm_id(), alarm_src(), event_id, comment()}}
+	```
 
 #### Alarm Summary ####
 
@@ -179,7 +187,9 @@ changes a message will be received.
 
 The format of the messages is:
 
-    {elarm, Ref, #alarm_summary{}}
+```Erlang
+{elarm, Ref, #alarm_summary{}}
+```
 
 ### Acknowledge Alarms ###
 
