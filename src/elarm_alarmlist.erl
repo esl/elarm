@@ -33,7 +33,6 @@
          get_alarm/3,
          get_alarms/1]).
 
--include_lib("eunit/include/eunit.hrl").
 -include_lib("elarm/include/elarm.hrl").
 
 -record(al_state, {alarmlist,
@@ -142,6 +141,8 @@ get_alarms(#al_state{ alarmlist = AList } = State) ->
 %%%===================================================================
 %%% EUnit Tests
 %%%===================================================================
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
 
 al_test_() ->
     {setup, fun setup/0, fun teardown/1,
@@ -206,3 +207,5 @@ one_alarm() ->
        threshold = undefined,
        state = new,
        ack_info = undefined}.
+
+-endif.
