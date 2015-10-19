@@ -36,10 +36,6 @@
          terminate/2,
          code_change/3]).
 
--ifdef(TEST).
--include_lib("eunit/include/eunit.hrl").
--endif.
-
 -define(SERVER, ?MODULE).
 
 -record(state, {
@@ -208,6 +204,7 @@ handle_server_started(Name, Pid, #state{servers = Servers} = State) ->
 %%%===================================================================
 
 -ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
 
 -define(GET_MSG(PATTERN),
         receive

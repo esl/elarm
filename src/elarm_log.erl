@@ -32,7 +32,6 @@
          clear/3,
          search/2]).
 
--include_lib("eunit/include/eunit.hrl").
 -include_lib("elarm/include/elarm.hrl").
 
 -record(log_state,{}).

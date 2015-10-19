@@ -34,7 +34,6 @@
          handle_down/2,
          filter_alarms/2]).
 
--include_lib("eunit/include/eunit.hrl").
 -include_lib("elarm/include/elarm.hrl").
 
 -record(evt_state, {subs = []}).

@@ -30,7 +30,6 @@
          get_default_configuration/1,
          add_configuration/3]).
 
--include_lib("eunit/include/eunit.hrl").
 -include_lib("elarm/include/elarm.hrl").
 
 -record(config_state, { default_map,
@@ -135,6 +134,8 @@ create_record(DefaultMap) ->
 %%%===================================================================
 %%% EUnit Tests
 %%%===================================================================
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
 
 config_test_() ->
     {setup, fun setup/0, fun teardown/1,
@@ -175,3 +176,5 @@ setup() ->
 
 teardown(_) ->
     ok.
+
+-endif.
