@@ -150,7 +150,7 @@ raise(Srv, Id, Src, AddInfo) ->
 %% @equiv clear(elarm_server, Id, Src, ok)
 %% @end
 %%--------------------------------------------------------------------
--spec clear(alarm_id(), alarm_src()) -> ok.
+-spec clear(alarm_id(), alarm_src()) -> ok | {error, not_active}.
 clear(Id, Src) ->
     clear(elarm_server, Id, Src, ok).
 
@@ -160,7 +160,8 @@ clear(Id, Src) ->
 %% @equiv clear(Srv, Id, Src, ok)
 %% @end
 %%--------------------------------------------------------------------
--spec clear(pid()|atom(), alarm_id(), alarm_src()) -> ok.
+-spec clear(pid()|atom(), alarm_id(), alarm_src()) ->
+          ok | {error, not_active}.
 clear(Srv, Id, Src) ->
     clear(Srv, Id, Src, ok).
 
@@ -169,7 +170,8 @@ clear(Srv, Id, Src) ->
 %% Clear an alarm
 %% @end
 %%--------------------------------------------------------------------
--spec clear(pid()|atom(), alarm_id(), alarm_src(), clear_reason()) -> ok.
+-spec clear(pid()|atom(), alarm_id(), alarm_src(), clear_reason()) ->
+          ok | {error, not_active}.
 clear(Srv, Id, Src, Reason) ->
     elarm_server:clear(Srv, Id, Src, Reason).
 
