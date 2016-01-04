@@ -5,6 +5,10 @@
   {registered, []},
   {applications, [kernel, stdlib]},
   {mod, {elarm_app, []}},
+  {maintainers, ["ESL"]},
+  {licenses, ["Apache 2.0"]},
+  {links, [{"Github", "https://github.com/esl/elarm"}]},
+  {build_tools, ["make", "rebar"]},
   {env, [%% List of servers to start [{name, Opts}]
          {servers, [{elarm_server,[]}]},
          %% Callback module for alarm configuration data
