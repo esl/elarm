@@ -50,8 +50,8 @@
 init(_Opts) ->
     {ok, #evt_state{}}.
 
--spec subscribe(pid()|atom(), sub_filter(), #evt_state{}) ->
-          {{ok,reference()},#evt_state{}}.
+-spec subscribe(pid() | atom(), sub_filter(), #evt_state{}) ->
+          {{ok, reference()}, #evt_state{}}.
 subscribe(Pid, Filter, #evt_state{ subs = Subs } = State)->
     MRef = monitor(process, Pid),
     Ref = make_ref(),
@@ -59,10 +59,10 @@ subscribe(Pid, Filter, #evt_state{ subs = Subs } = State)->
     {{ok, Ref}, State#evt_state{ subs = NewSubs }}.
 
 %% Cancel subscription.
--spec unsubscribe(reference(), #evt_state{}) -> {ok,#evt_state{}}.
+-spec unsubscribe(reference(), #evt_state{}) -> {ok, #evt_state{}}.
 unsubscribe(Ref, #evt_state{ subs = Subs } = State)->
     NewSubs = case find_subscriber(Ref, Subs) of
-                  {ok, {Ref, MRef, _,_}} ->
+                  {ok, {Ref, MRef, _, _}} ->
                       demonitor(MRef, [flush]),
                       remove_subscriber(Ref, Subs);
                   {error, not_subscribed} ->
@@ -72,7 +72,7 @@ unsubscribe(Ref, #evt_state{ subs = Subs } = State)->
 
 -spec new_alarm(alarm(), #evt_state{}) -> {ok, #evt_state{}} | {error, term()}.
 new_alarm(Alarm, #evt_state{ subs = Subs } = State) ->
-    send_events(Alarm, Subs),
+    _ = send_events(Alarm, Subs),
     {ok, State}.
 
 -spec repeat_alarm(alarm(), #evt_state{}) ->
@@ -86,7 +86,7 @@ repeat_alarm(_Alarm, State) ->
 acknowledge(AlarmId, Src, EventId, AckInfo,
             #evt_state{ subs = Subs } =  State) ->
     Event = {ack, AlarmId, Src, EventId, AckInfo},
-    send_events(Event, Subs),
+    _ = send_events(Event, Subs),
     {ok, State}.
 
 -spec unacknowledge(alarm_id(), alarm_src(), event_id(), ack_info(),
@@ -95,7 +95,7 @@ acknowledge(AlarmId, Src, EventId, AckInfo,
 unacknowledge(AlarmId, Src, EventId, AckInfo,
             #evt_state{ subs = Subs } =  State) ->
     Event = {unack, AlarmId, Src, EventId, AckInfo},
-    send_events(Event, Subs),
+    _ = send_events(Event, Subs),
     {ok, State}.
 
 %% Add a comment to an alarm
@@ -105,14 +105,14 @@ unacknowledge(AlarmId, Src, EventId, AckInfo,
 add_comment(AlarmId, Src, EventId, Comment,
             #evt_state{ subs = Subs } =  State) ->
     Event = {add_comment, AlarmId, Src, EventId, Comment},
-    send_events(Event, Subs),
+    _ = send_events(Event, Subs),
     {ok, State}.
 
 %% Automatically clear an alarm
 
 clear(AlarmId, Src, EventId, Reason, #evt_state{ subs = Subs } =  State) ->
     Event = {clear, AlarmId, Src, EventId, Reason},
-    send_events(Event, Subs),
+    _ = send_events(Event, Subs),
     {ok, State}.
 
 %% Remove a subscriber when he has terminated
@@ -164,13 +164,13 @@ test_filter(#alarm{alarm_type=Type}, [{type, Type}|_]) ->
     match;
 test_filter(#alarm{src = Src}, [{src, Src}|_]) ->
     match;
-test_filter({ack, _AlarmId, Src, _EventId, _AckInfo}, [{src,Src}|_]) ->
+test_filter({ack, _AlarmId, Src, _EventId, _AckInfo}, [{src, Src}|_]) ->
     match;
-test_filter({add_comment, _AlarmId, Src, _EventId, _Comment}, [{src,Src}|_]) ->
+test_filter({add_comment, _AlarmId, Src, _EventId, _Comment}, [{src, Src}|_]) ->
     match;
-test_filter({clear, _AlarmId, Src, _EventId}, [{src,Src}|_]) ->
+test_filter({clear, _AlarmId, Src, _EventId}, [{src, Src}|_]) ->
     match;
-test_filter(Event,[_|Filter]) ->
+test_filter(Event, [_|Filter]) ->
     test_filter(Event, Filter);
 test_filter(_Event, []) ->
     nomatch.

@@ -140,7 +140,10 @@ raise(Id, Src, AddInfo) ->
 %% Raise an alarm.
 %% @end
 %%--------------------------------------------------------------------
--spec raise(pid()|atom(), alarm_id(), alarm_src(), additional_information()) -> ok.
+-spec raise(pid() | atom(),
+            alarm_id(),
+            alarm_src(),
+            additional_information()) -> ok.
 raise(Srv, Id, Src, AddInfo) ->
     elarm_server:raise(Srv, Id, Src, AddInfo).
 
@@ -429,7 +432,8 @@ get_alarm_by_id(Srv, EventId) ->
 %% @equiv get_configured(elarm_server)
 %% @end
 %%--------------------------------------------------------------------
--spec get_configured() -> {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
+-spec get_configured() -> {ok, [{alarm_id(), alarm_config()}]} |
+                          {error, term()}.
 get_configured() ->
     get_configured(elarm_server).
 
@@ -438,7 +442,7 @@ get_configured() ->
 %% Get all currently configured alarms.
 %% @end
 %%--------------------------------------------------------------------
--spec get_configured(pid()|atom()) -> {ok, [{alarm_id(),alarm_config()}]} |
+-spec get_configured(pid()|atom()) -> {ok, [{alarm_id(), alarm_config()}]} |
                                       {error, term()}.
 get_configured(Srv) ->
     elarm_server:get_configured(Srv).
@@ -470,7 +474,7 @@ get_unconfigured(Srv) ->
 %% @equiv get_all_configuration(elarm_server)
 %% @end
 %%--------------------------------------------------------------------
--spec get_all_configuration() -> {ok, [{alarm_id(),alarm_config()}]} |
+-spec get_all_configuration() -> {ok, [{alarm_id(), alarm_config()}]} |
                                  {error, term()}.
 get_all_configuration() ->
     get_all_configuration(elarm_server).
@@ -483,7 +487,7 @@ get_all_configuration() ->
 %% @end
 %%--------------------------------------------------------------------
 -spec get_all_configuration(pid()|atom()) ->
-          {ok, [{alarm_id(),alarm_config()}]} | {error, term()}.
+          {ok, [{alarm_id(), alarm_config()}]} | {error, term()}.
 get_all_configuration(Srv) ->
     elarm_server:get_all_configuration(Srv).
 

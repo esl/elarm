@@ -17,7 +17,7 @@
 %%% @doc
 %%% Supervisor for the supervisors for all the alarm managers.
 %%% @end
-%%% Created : 06 Jun 2014 by Luca Favatella <luca.favatella@erlang-solutions.com>
+%%% Created: 06 Jun 2014 by Luca Favatella <luca.favatella@erlang-solutions.com>
 %%%-------------------------------------------------------------------
 -module(elarm_man_sup_sup).
 
@@ -100,7 +100,7 @@ init([]) ->
 %%%===================================================================
 
 mk_servers_specs() ->
-    {ok,Servers} = application:get_env(elarm, servers),
+    {ok, Servers} = application:get_env(elarm, servers),
     [alarm_manager_spec(Name, Opts) || {Name, Opts} <- Servers].
 
 alarm_manager_spec(Name, Opts) ->

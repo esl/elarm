@@ -2,3 +2,5 @@ deps
 ebin
 .eunit
 .plt
+_build/
+rebar.lock

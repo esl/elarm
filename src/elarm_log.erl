@@ -34,7 +34,7 @@
 
 -include_lib("elarm/include/elarm.hrl").
 
--record(log_state,{}).
+-record(log_state, {}).
 
 %%%===================================================================
 %%% API
@@ -50,11 +50,11 @@ init(_Opts) ->
 
 -spec new_alarm(alarm(), #log_state{}) -> {ok, #log_state{}}.
 new_alarm(_Alarm, State) ->
-    {ok,State}.
+    {ok, State}.
 
 -spec repeat_alarm(alarm(), #log_state{}) -> {ok, #log_state{}}.
 repeat_alarm(_Alarm, State) ->
-    {ok,State}.
+    {ok, State}.
 
 -spec acknowledge(alarm(), ack_info(), #log_state{}) ->
           {ok, #log_state{}} | {error, term()}.
@@ -73,7 +73,8 @@ add_comment(_Alarm, _Comment, State) ->
     {ok, State}.
 
 %% Automatically clear an alarm
--spec clear(alarm(), clear_reason(), #log_state{}) -> {ok, #log_state{}} | {error, term()}.
+-spec clear(alarm(), clear_reason(), #log_state{}) -> {ok, #log_state{}} |
+                                                      {error, term()}.
 clear(_Alarm, _Reason, State) ->
     {ok, State}.
 

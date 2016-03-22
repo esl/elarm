@@ -70,8 +70,8 @@ repeat_alarm(_Alarm, State) ->
 acknowledge(AlarmId, Src, AckInfo,
             #al_state{ alarmlist = AList } = State) ->
     [{Key, Alarm}] = ets:lookup(AList, {AlarmId, Src}),
-    true = ets:insert(AList, {Key,Alarm#alarm{ ack_info = AckInfo,
-                                               state = acknowledged }}),
+    true = ets:insert(AList, {Key, Alarm#alarm{ ack_info = AckInfo,
+                                                state = acknowledged }}),
     {ok, State}.
 
 -spec unacknowledge(alarm_id(), alarm_src(), ack_info(), #al_state{}) ->
@@ -79,17 +79,17 @@ acknowledge(AlarmId, Src, AckInfo,
 unacknowledge(AlarmId, Src, AckInfo,
               #al_state{ alarmlist = AList } = State) ->
     [{Key, Alarm}] = ets:lookup(AList, {AlarmId, Src}),
-    true = ets:insert(AList, {Key,Alarm#alarm{ ack_info = AckInfo,
-                                               state = new }}),
+    true = ets:insert(AList, {Key, Alarm#alarm{ ack_info = AckInfo,
+                                                state = new }}),
     {ok, State}.
 
 %% Add a comment to an alarm
 -spec add_comment(alarm_id(), alarm_src(), comment(), #al_state{}) ->
           {ok, #al_state{}} | {error, term()}.
-add_comment(AlarmId, Src, Comment, #al_state{ alarmlist = AList } = State) -> 
-    Key = {AlarmId,Src},
+add_comment(AlarmId, Src, Comment, #al_state{ alarmlist = AList } = State) ->
+    Key = {AlarmId, Src},
     [{_Key, #alarm{ comments = Cs } = Alarm}] = ets:lookup(AList, Key),
-    true = ets:insert(AList, {Key,Alarm#alarm{ comments = [Comment|Cs] }}),
+    true = ets:insert(AList, {Key, Alarm#alarm{ comments = [Comment|Cs] }}),
     {ok, State}.
 
 %% Clear an alarm
@@ -98,7 +98,7 @@ add_comment(AlarmId, Src, Comment, #al_state{ alarmlist = AList } = State) ->
 clear(AlarmId, Src,
       #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
     Key = {AlarmId, Src},
-    [{_,#alarm{ event_id = EventId }}] = ets:lookup(AList, Key),
+    [{_, #alarm{ event_id = EventId }}] = ets:lookup(AList, Key),
     true = ets:delete(EventIds, EventId),
     true = ets:delete(AList, Key),
     {ok, State}.
@@ -109,7 +109,7 @@ get_alarm(EventId,
           #al_state{ alarmlist = AList, event_ids = EventIds } = State) ->
     Result = case ets:lookup(EventIds, EventId) of
                  [{EventId, Key}] ->
-                     [{Key,Alarm}] = ets:lookup(AList, Key),
+                     [{Key, Alarm}] = ets:lookup(AList, Key),
                      {ok, Alarm};
                  [] ->
                      {error, not_active}
@@ -120,8 +120,8 @@ get_alarm(EventId,
           {{ok, alarm()}, #al_state{}} | {error, not_active, #al_state{}}.
 get_alarm(AlarmId, Src,
           #al_state{ alarmlist = AList } = State) ->
-    Result = case ets:lookup(AList, {AlarmId,Src}) of
-                 [{_Key,Alarm}] ->
+    Result = case ets:lookup(AList, {AlarmId, Src}) of
+                 [{_Key, Alarm}] ->
                      {ok, Alarm};
                  [] ->
                      {error, not_active}
@@ -131,7 +131,7 @@ get_alarm(AlarmId, Src,
 -spec get_alarms(#al_state{}) ->
           {{ok, [alarm()]}, #al_state{}} | {error, term(), #al_state{}}.
 get_alarms(#al_state{ alarmlist = AList } = State) ->
-    Alarms = [Alarm || {_Key,Alarm} <- ets:tab2list(AList)],
+    Alarms = [Alarm || {_Key, Alarm} <- ets:tab2list(AList)],
     {{ok, Alarms}, State}.
 
 %%%===================================================================
@@ -151,36 +151,36 @@ al_test_() ->
      ]}.
 
 just_started() ->
-    {ok,State} = init([]),
-    ?assertEqual({{ok,[]}, State}, get_alarms(State)),
-    EvtId = erlang:now(),
-    ?assertEqual({{error, not_active},State}, get_alarm(EvtId, State)),
-    ?assertEqual({{error, not_active},State}, get_alarm(full, disk_1, State)).
+    {ok, State} = init([]),
+    ?assertEqual({{ok, []}, State}, get_alarms(State)),
+    EvtId = erlang:timestamp(),
+    ?assertEqual({{error, not_active}, State}, get_alarm(EvtId, State)),
+    ?assertEqual({{error, not_active}, State}, get_alarm(full, disk_1, State)).
 
 add_alarm() ->
-    {ok,State} = init([]),
+    {ok, State} = init([]),
     Alarm1 = one_alarm(),
-    ?assertEqual({ok,State}, new_alarm(one_alarm(), State)),
-    ?assertEqual({{ok, Alarm1},State}, get_alarm(full, disk1, State)),
+    ?assertEqual({ok, State}, new_alarm(one_alarm(), State)),
+    ?assertEqual({{ok, Alarm1}, State}, get_alarm(full, disk1, State)),
     AckInfo = #ack_info{},
     AckedAlarm = Alarm1#alarm{ state = acknowledged,
                                ack_info = AckInfo},
-    ?assertEqual({ok,State}, acknowledge(full, disk1, AckInfo, State)),
+    ?assertEqual({ok, State}, acknowledge(full, disk1, AckInfo, State)),
     AckedAlarm = Alarm1#alarm{ state = acknowledged,
                                ack_info = AckInfo},
-    ?assertMatch({{ok,AckedAlarm}, State}, get_alarm(full, disk1, State)),
+    ?assertMatch({{ok, AckedAlarm}, State}, get_alarm(full, disk1, State)),
     Comment = #comment{user = <<"me">>,
                        time = calendar:universal_time(),
                        text = <<"test">>},
     CommentedAlarm = AckedAlarm#alarm{comments = [Comment]},
-    ?assertEqual({ok,State}, add_comment(full, disk1, Comment, State)),
+    ?assertEqual({ok, State}, add_comment(full, disk1, Comment, State)),
     ?assertEqual({{ok, CommentedAlarm}, State}, get_alarm(full, disk1, State)),
 
     ?assertEqual({ok, State}, clear(full, disk1, State)),
     ?assertEqual({{error, not_active}, State}, get_alarm(full, disk1, State)),
 
-    ?assertEqual({ok,State}, new_alarm(one_alarm(), State)),
-    ?assertEqual({{ok, Alarm1},State}, get_alarm(full, disk1, State)).
+    ?assertEqual({ok, State}, new_alarm(one_alarm(), State)),
+    ?assertEqual({{ok, Alarm1}, State}, get_alarm(full, disk1, State)).
 
 
 setup() ->
@@ -194,8 +194,8 @@ one_alarm() ->
        alarm_id = full,
        alarm_type = undefined,
        src = disk1,
-       event_time = {{2013,8,1},{22,27,30}},
-       event_id = {1375,396050,79296},
+       event_time = {{2013, 8, 1}, {22, 27, 30}},
+       event_id = {1375, 396050, 79296},
        severity = indeterminate,
        probable_cause = <<>>,
        proposed_repair_action = <<>>,
