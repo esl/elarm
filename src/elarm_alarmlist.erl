@@ -21,6 +21,8 @@
 %%%-------------------------------------------------------------------
 -module(elarm_alarmlist).
 
+-ignore_xref([{erlang, now, 0}]).
+
 %% API
 -export([init/1,
          new_alarm/2,
@@ -153,7 +155,7 @@ al_test_() ->
 just_started() ->
     {ok, State} = init([]),
     ?assertEqual({{ok, []}, State}, get_alarms(State)),
-    EvtId = erlang:timestamp(),
+    EvtId = erlang:now(),
     ?assertEqual({{error, not_active}, State}, get_alarm(EvtId, State)),
     ?assertEqual({{error, not_active}, State}, get_alarm(full, disk_1, State)).
 

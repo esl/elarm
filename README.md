@@ -14,7 +14,7 @@ But it can also be started quickly from an Erlang shell:
     $ git clone git@github.com:esl/elarm.git
     [...]
     $ cd elarm
-    $ make
+    $ rebar3 compile
     [...]
     $ erl -pa ebin
     > application:start(elarm).
@@ -209,5 +209,33 @@ the `UserId` of the user.
 Normally alarms are cleared automatically by the application by calling
 `elarm:clear`, but in some cases it may be necessary to manually clear an alarm,
 this can be done using `elarm:manual_clear/3`.
+
+# Running Tests #
+
+Since this project includes `Meta Testing` (`dialyzer`, `xref`, `elvis`) we need to
+generate the **PLT** file before running Common Tests suites. In order to do that you just
+need to run (don't forget to compile the project first (if you haven't: `rebar3 compile`)):
+
+```bash
+rebar3 dialyzer
+```
+
+Then you can run Common Tests by running:
+
+```bash
+rebar3 ct
+```
+
+After that you just need to use the following command to run `Eunit` tests:
+
+```bash
+rebar3 eunit
+```
+
+**NOTE:** If you want you can also run all these commands in one line:
+
+```bash
+rebar3 do compile, dialyzer, ct, eunit
+```
 
 # Plugins #

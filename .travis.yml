@@ -9,4 +9,4 @@ otp_release:
    - R15B03
    - R15B02
    - R15B01
-script: "make all test doc"
+script: "rebar3 do compile, dialyzer, ct, eunit"

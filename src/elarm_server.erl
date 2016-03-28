@@ -21,6 +21,8 @@
 %%%-------------------------------------------------------------------
 -module(elarm_server).
 
+-ignore_xref([{erlang, now, 0}]).
+
 -behaviour(gen_server).
 
 %% API
@@ -367,7 +369,7 @@ create_alarm_rec(AlarmId, Src, AddInfo, Cfg) ->
 
 new_event_id() ->
     %% TODO: Fix this to something better
-    erlang:timestamp().
+    erlang:now().
 
 get_alarm_type(#alarm_config{ alarm_type = Type }) ->
     Type.
