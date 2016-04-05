@@ -81,11 +81,15 @@
 %% @doc
 %% Starts the server
 %%
-%% @spec start_link(Client, Server, Filter) -> {ok, Pid} | ignore | {error, Error}
+%% @spec start_link(Client, Server, Filter) -> {ok, Pid} |
+%%                                             ignore |
+%%                                             {error, Error}
 %% @end
 %%--------------------------------------------------------------------
 start_link(Client, Server, Filter) ->
-    gen_server:start_link(?MODULE, [Client, Server, Filter], [{debug,[trace]}]).
+    gen_server:start_link(?MODULE,
+                          [Client, Server, Filter],
+                          [{debug, [trace]}]).
 
 get_ref(Pid) ->
     gen_server:call(Pid, get_ref).
@@ -107,7 +111,9 @@ get_ref(Pid) ->
 %%--------------------------------------------------------------------
 init([Client, AlarmServer, Filter]) ->
     MRef = monitor(process, Client),
-    {ok, AlRef, AlarmList} = elarm_server:subscribe(AlarmServer, Filter, self()),
+    {ok, AlRef, AlarmList} = elarm_server:subscribe(AlarmServer,
+                                                    Filter,
+                                                    self()),
     {Summary, Alarms} = process_alarmlist(AlarmList),
     Ref = make_ref(),
     NewStatus = maybe_send_event(Ref, Client, Summary, undefined),
@@ -198,12 +204,15 @@ handle_info({elarm, AlRef, {clear, AlarmId, AlarmSrc, _EventId}},
                            alarms = NewAlarms,
                            summary = NewSummary }};
 
-handle_info({elarm, ref, {add_comment, _AlarmId, _AlarmSrc, _EventId, _Comment}},
+handle_info({elarm,
+             ref,
+             {add_comment, _AlarmId, _AlarmSrc, _EventId, _Comment}},
             State) ->
     %% Ignore
     {noreply, State};
 
-handle_info({'DOWN', MRef, _Type, _Pid, _Info}, #state{ mref = MRef } = State) ->
+handle_info({'DOWN', MRef, _Type, _Pid, _Info},
+            #state{ mref = MRef } = State) ->
     {stop, normal, State}.
 
 %%--------------------------------------------------------------------
@@ -241,10 +250,10 @@ new_alarms() ->
     dict:new().
 
 add_alarm(Id, Src, Severity, State, Alarms) ->
-    dict:store({Id,Src}, {Severity, State}, Alarms).
+    dict:store({Id, Src}, {Severity, State}, Alarms).
 
 get_alarm(Id, Src, Alarms) ->
-    dict:fetch({Id,Src},Alarms).
+    dict:fetch({Id, Src}, Alarms).
 
 delete_alarm(Id, Src, Alarms) ->
     dict:erase({Id, Src}, Alarms).
@@ -257,7 +266,10 @@ process_alarmlist(AlarmList) ->
 new_alarm(Alarm, {Summary, Alarms}) ->
     new_alarm(Alarm, Summary, Alarms).
 
-new_alarm(#alarm{alarm_id = Id, src = Src, severity = Severity, state = AlState},
+new_alarm(#alarm{alarm_id = Id,
+                 src = Src,
+                 severity = Severity,
+                 state = AlState},
           Summary, Alarms) ->
     NewSummary = increment_count(Summary, Severity, AlState),
     NewAlarms = add_alarm(Id, Src, Severity, AlState, Alarms),
@@ -335,7 +347,7 @@ maybe_send_event(Ref, Client, Summary, Status) ->
         Status ->
             Status;
         Status1 ->
-            send_event(Ref, Client, Status1),
+            _ = send_event(Ref, Client, Status1),
             Status1
     end.
 
@@ -347,7 +359,7 @@ update_summary_ack(Summary, Severity) ->
     increment_count(NewSummary, Severity, acknowledged).
 
 clear_alarm(AlarmId, AlarmSrc, Summary, Alarms) ->
-    {Severity,State} = get_alarm(AlarmId, AlarmSrc, Alarms),
+    {Severity, State} = get_alarm(AlarmId, AlarmSrc, Alarms),
     NewSummary = decrement_count(Summary, Severity, State),
     NewAlarms = delete_alarm(AlarmId, AlarmSrc, Alarms),
     {NewSummary, NewAlarms}.

@@ -30,11 +30,11 @@ teardown(_) ->
     ok = application:stop(elarm).
 
 which_servers_internal() ->
-    ?assertMatch([{elarm1,_}, {elarm_server,_}],
+    ?assertMatch([{elarm1, _}, {elarm_server, _}],
                  lists:sort(elarm_man_sup_sup:which_servers())).
 
 which_servers() ->
-    ?assertMatch([{elarm1,_}, {elarm_server,_}],
+    ?assertMatch([{elarm1, _}, {elarm_server, _}],
                  lists:sort(elarm:which_servers())).
 
 subscribe() ->
@@ -54,7 +54,7 @@ raise_clear() ->
             ok
     end,
 
-    elarm:clear(too_hot, "cpu1"),
+    ok = elarm:clear(too_hot, "cpu1"),
     receive
         {elarm, _, {clear, too_hot, "cpu1", _, _Reason = ok}} ->
             ok
@@ -74,7 +74,7 @@ raise_clear_with_reason() ->
             ok
     end,
 
-    elarm:clear(elarm_server, too_hot, "cpu1", source_gone),
+    ok = elarm:clear(elarm_server, too_hot, "cpu1", source_gone),
     receive
         {elarm, _, {clear, too_hot, "cpu1", _, _Reason = source_gone}} ->
             ok
@@ -90,24 +90,24 @@ raise_ack_unack() ->
     {ok, Ref, _} = elarm:subscribe([all], self()),
     elarm:raise(fridge_melting, "fridge1", []),
 
-    elarm:acknowledge(fridge_melting, "fridge1", <<"superuser">>),
+    ok = elarm:acknowledge(fridge_melting, "fridge1", <<"superuser">>),
     receive
         {elarm, _, {ack, fridge_melting, "fridge1", _,
                     #ack_info{user = <<"superuser">>}}} ->
             ok
     after
         100 ->
-            ?assert(false)
+            throw(elarm_not_received)
     end,
 
-    elarm:unacknowledge(fridge_melting, "fridge1", <<"superuser">>),
+    ok = elarm:unacknowledge(fridge_melting, "fridge1", <<"superuser">>),
     receive
         {elarm, _, {unack, fridge_melting, "fridge1", _,
                     #ack_info{user = <<"superuser">>}}} ->
             ok
     after
         100 ->
-            ?assert(false)
+            throw(elarm_not_received)
     end,
 
     elarm:unsubscribe(Ref).
@@ -115,7 +115,7 @@ raise_ack_unack() ->
 comment() ->
     {ok, Ref, _} = elarm:subscribe([all], self()),
     elarm:raise(house_burning, "this one", []),
-    elarm:add_comment(house_burning, "this one", <<"Who cares?">>,
+    ok = elarm:add_comment(house_burning, "this one", <<"Who cares?">>,
                       <<"lazy joe">>),
     receive
         {elarm, _, {add_comment, house_burning, "this one", _,
@@ -124,7 +124,7 @@ comment() ->
             ok
     after
         100 ->
-            ?assert(false)
+            throw(elarm_not_received)
     end,
 
     elarm:unsubscribe(Ref).
@@ -132,7 +132,7 @@ comment() ->
 manual_clear() ->
     {ok, Ref, _} = elarm:subscribe([all], self()),
     elarm:raise(bad_disk, "sda", []),
-    elarm:manual_clear(bad_disk, "sda", <<"admin">>),
+    ok = elarm:manual_clear(bad_disk, "sda", <<"admin">>),
 
     receive
         {elarm, _, {clear, bad_disk, "sda", _, {manual, <<"admin">>}}} ->

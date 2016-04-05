@@ -21,6 +21,8 @@
 %%%-------------------------------------------------------------------
 -module(elarm_server).
 
+-ignore_xref([{erlang, now, 0}]).
+
 -behaviour(gen_server).
 
 %% API
@@ -255,7 +257,7 @@ handle_cast(_Msg, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_info({'DOWN', _MRef, _Type, _Object, _Info} = Down,
-	    #state{ event_cb = EvtCB, event_state = EvtState }=State) ->
+            #state{ event_cb = EvtCB, event_state = EvtState }=State) ->
     NewEvtState = EvtCB:handle_down(Down, EvtState),
     {noreply, State#state{ event_state = NewEvtState }};
 handle_info(_Info, State) ->
@@ -381,7 +383,8 @@ get_description(#alarm_config{ description = Description }) ->
     Description.
 
 is_duplicate(#alarm{ alarm_id = AlarmId, src = AlarmSrc },
-             #state{ alarmlist_cb = AlCB, alarmlist_state = AlState } = State) ->
+             #state{ alarmlist_cb = AlCB,
+                     alarmlist_state = AlState } = State) ->
     case AlCB:get_alarm(AlarmId, AlarmSrc, AlState) of
         {{ok, #alarm{}}, NewAlState} ->
             {true, State#state{ alarmlist_state = NewAlState }};
@@ -456,15 +459,16 @@ handle_acknowledge(AlarmId, Src, UserId,
                               event_state = NewEvtState,
                               log_state = NewLogState }};
         {{ok, #alarm{ state = acknowledged }}, NewAlState} ->
-            {{error, acknowledged}, State#state{ alarmlist_state = NewAlState }};
+            {{error, acknowledged},
+             State#state{ alarmlist_state = NewAlState }};
         {Error, NewAlState} ->
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
 log_acknowledge(Alarm, AckInfo, LogCB, LogState) ->
-    LogCB:acknowledge(Alarm, AckInfo,LogState).
+    LogCB:acknowledge(Alarm, AckInfo, LogState).
 
-alarmlist_acknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
+alarmlist_acknowledge(AlarmId, Src, AckInfo, AlCB, AlState) ->
     AlCB:acknowledge(AlarmId, Src, AckInfo, AlState).
 
 send_acknowlegde_events(AlarmId, Src, EventId, AckInfo, EvtCB, EvtState) ->
@@ -492,16 +496,17 @@ handle_unacknowledge(AlarmId, Src, UserId,
                               event_state = NewEvtState,
                               log_state = NewLogState }};
         {{ok, #alarm{ state = new }}, NewAlState} ->
-            {{error, unacknowledged}, State#state{ alarmlist_state = NewAlState }};
+            {{error, unacknowledged},
+             State#state{ alarmlist_state = NewAlState }};
         {Error, NewAlState} ->
             {Error, State#state{ alarmlist_state = NewAlState}}
     end.
 
 log_unacknowledge(Alarm, AckInfo, LogCB, LogState) ->
-    LogCB:unacknowledge(Alarm, AckInfo,LogState).
+    LogCB:unacknowledge(Alarm, AckInfo, LogState).
 
-alarmlist_unacknowledge(AlarmId, Src, AckInfo,AlCB, AlState) ->
-    AlCB:unacknowledge(AlarmId, Src, AckInfo,AlState).
+alarmlist_unacknowledge(AlarmId, Src, AckInfo, AlCB, AlState) ->
+    AlCB:unacknowledge(AlarmId, Src, AckInfo, AlState).
 
 send_unacknowlegde_events(AlarmId, Src, EventId, AckInfo, EvtCB, EvtState) ->
     EvtCB:unacknowledge(AlarmId, Src, EventId, AckInfo, EvtState).
@@ -547,13 +552,13 @@ handle_get_alarms(#state{ alarmlist_cb = AlCB,
 handle_subscribe(Pid, Filter,
                  #state{ event_cb = EvtCB,
                          event_state = EvtState,
-			 alarmlist_cb = AlCB,
-			 alarmlist_state = AlState } = State) ->
-    {{ok,Ref}, NewEvtState} = EvtCB:subscribe(Pid, Filter, EvtState),
-    {{ok,Alarms}, NewAlState} = AlCB:get_alarms(AlState),
+                         alarmlist_cb = AlCB,
+                         alarmlist_state = AlState } = State) ->
+    {{ok, Ref}, NewEvtState} = EvtCB:subscribe(Pid, Filter, EvtState),
+    {{ok, Alarms}, NewAlState} = AlCB:get_alarms(AlState),
     Filtered = EvtCB:filter_alarms(Alarms, Filter),
     {{ok, Ref, Filtered}, State#state{ alarmlist_state = NewAlState,
-				       event_state = NewEvtState }}.
+                                       event_state = NewEvtState }}.
 
 handle_unsubscribe(Ref, #state{ event_cb = EvtCB,
                                 event_state = EvtState } = State) ->

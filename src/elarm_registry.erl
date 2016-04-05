@@ -184,13 +184,13 @@ handle_unsubscribe(Pid, #state{subscribers = Subs} = State) ->
     end.
 
 handle_server_down(Name, Pid, #state{servers = Servers} = State) ->
-    [Sub ! {elarm_down, Name, Pid}
+    _ = [Sub ! {elarm_down, Name, Pid}
         || {Sub, _Mon} <- State#state.subscribers],
     State#state{servers = lists:keydelete(Name, 1, Servers)}.
 
 handle_server_started(Name, Pid, #state{servers = Servers} = State) ->
     erlang:monitor(process, Name),
-    [Sub ! {elarm_started, Name, Pid}
+    _ = [Sub ! {elarm_started, Name, Pid}
         || {Sub, _Mon} <- State#state.subscribers],
     case lists:keyfind(Name, 1, Servers) of
         false ->
@@ -265,7 +265,7 @@ subscribe_test_() ->
               erlang:unlink(P),
               receive
                   {elarm_started, test2, _} ->
-                      ?assert(false)
+                      throw(elarm_not_received)
               after
                   100 ->
                       ok

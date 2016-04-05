@@ -9,4 +9,7 @@ otp_release:
    - R15B03
    - R15B02
    - R15B01
-script: "make all test doc"
+
+script:
+   - "wget https://s3.amazonaws.com/rebar3/rebar3 && chmod +x rebar3"
+   - "./rebar3 do compile, dialyzer, ct, eunit"
