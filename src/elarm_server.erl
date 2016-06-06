@@ -365,9 +365,14 @@ create_alarm_rec(AlarmId, Src, AddInfo, Cfg) ->
        state = new
       }.
 
+-ifdef(erlang_now_deprecated).
+new_event_id() ->
+    {os:timestamp(), erlang:unique_integer()}.
+-else.
 new_event_id() ->
     %% TODO: Fix this to something better
     erlang:now().
+-endif.
 
 get_alarm_type(#alarm_config{ alarm_type = Type }) ->
     Type.
