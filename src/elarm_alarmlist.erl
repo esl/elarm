@@ -153,7 +153,7 @@ al_test_() ->
 just_started() ->
     {ok,State} = init([]),
     ?assertEqual({{ok,[]}, State}, get_alarms(State)),
-    EvtId = erlang:now(),
+    EvtId = event_id(),
     ?assertEqual({{error, not_active},State}, get_alarm(EvtId, State)),
     ?assertEqual({{error, not_active},State}, get_alarm(full, disk_1, State)).
 
@@ -207,5 +207,11 @@ one_alarm() ->
        threshold = undefined,
        state = new,
        ack_info = undefined}.
+
+-ifdef(erlang_now_deprecated).
+event_id() -> {os:timestamp(), erlang:unique_integer()}.
+-else.
+event_id() -> erlang:now().
+-endif.
 
 -endif.
