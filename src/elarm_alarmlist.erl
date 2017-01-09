@@ -62,7 +62,14 @@ new_alarm(#alarm{ alarm_id = AlId, src = Src, event_id = EventId } = Alarm,
     {ok, State}.
 
 -spec repeat_alarm(alarm(), #al_state{}) -> {ok, #al_state{}} | {error, term()}.
-repeat_alarm(_Alarm, State) ->
+repeat_alarm(#alarm{ alarm_id = AlId,
+                     src = Src,
+                     additional_information = AddInfo },
+          #al_state{ alarmlist = AList } = State) ->
+    Key = {AlId, Src},
+    [{Key, OldAlarm}] = ets:lookup(AList, Key),
+    NewAlarm = OldAlarm#alarm{ additional_information = AddInfo },
+    true = ets:insert(AList, {Key, NewAlarm}),
     {ok, State}.
 
 -spec acknowledge(alarm_id(), alarm_src(), ack_info(), #al_state{}) ->
