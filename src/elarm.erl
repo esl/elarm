@@ -51,6 +51,8 @@
          read_log/2,
          get_alarms/0,
          get_alarms/1,
+         get_alarm/2,
+         get_alarm/3,
          get_alarm_by_id/1,
          get_alarm_by_id/2,
          get_configured/0,
@@ -397,6 +399,26 @@ get_alarms() ->
 -spec get_alarms(pid()|atom()) -> {ok, [alarm()]} | {error, term()}.
 get_alarms(Srv) ->
     elarm_server:get_alarms(Srv).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Get alarm by alarm id and alarm src.
+%% @equiv get_alarm(elarm_server, AlarmId, AlarmSrc)
+%% @end
+%%--------------------------------------------------------------------
+-spec get_alarm(alarm_id(), alarm_src()) -> {ok, alarm()} | {error, term()}.
+get_alarm(AlarmId, AlarmSrc) ->
+    get_alarm(elarm_server, AlarmId, AlarmSrc).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Get alarm by alarm id and alarm src.
+%% @end
+%%--------------------------------------------------------------------
+-spec get_alarm(pid()|atom(), alarm_id(), alarm_src()) ->
+          {ok, alarm()} | {error, term()}.
+get_alarm(Srv, AlarmId, AlarmSrc) ->
+    elarm_server:get_alarm(Srv, AlarmId, AlarmSrc).
 
 %%--------------------------------------------------------------------
 %% @doc

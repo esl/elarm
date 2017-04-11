@@ -33,6 +33,7 @@
          unacknowledge/4,
          add_comment/5,
          get_alarms/1,
+         get_alarm/3,
          read_log/2,
          get_configured/1,
          get_unconfigured/1,
@@ -120,6 +121,11 @@ add_comment(Pid, AlarmId, AlarmSrc, Text, UserId) ->
 -spec get_alarms(pid()|atom()) -> {ok, [alarm()]} | {error, term()}.
 get_alarms(Pid) ->
     gen_server:call(Pid, get_alarms).
+
+-spec get_alarm(pid()|atom(), alarm_id(), alarm_src()) ->
+          {ok, alarm()} | {error, term()}.
+get_alarm(Pid, AlarmId, AlarmSrc) ->
+    gen_server:call(Pid, {get_alarm, AlarmId, AlarmSrc}).
 
 %% -------------------------------------------------------------------
 %% Functions used by presentation layer to access alarm log
@@ -210,6 +216,9 @@ handle_call({add_comment, AlarmId, AlarmSrc, Text, UserId}, _From, State) ->
     {reply, Reply, NewState};
 handle_call(get_alarms, _From, State) ->
     {Reply, NewState} = handle_get_alarms(State),
+    {reply, Reply, NewState};
+handle_call({get_alarm, AlarmId, AlarmSrc}, _From, State) ->
+    {Reply, NewState} = handle_get_alarm(AlarmId, AlarmSrc, State),
     {reply, Reply, NewState};
 handle_call({read_log, Filter}, _From, State) ->
     {Reply, NewState} = handle_read_log(Filter, State),
@@ -548,6 +557,15 @@ handle_get_alarms(#state{ alarmlist_cb = AlCB,
                           alarmlist_state = AlState} = State) ->
     {Result, NewAlState} = AlCB:get_alarms(AlState),
     {Result, State#state{ alarmlist_state = NewAlState}}.
+
+handle_get_alarm(AlarmId, Src,
+                 #state{ alarmlist_cb = AlCB, alarmlist_state = AlState } = State) ->
+    case AlCB:get_alarm(AlarmId, Src, AlState) of
+        {{ok, #alarm{} = Alarm}, NewAlState} ->
+            {{ok, Alarm}, State#state{ alarmlist_state = NewAlState }};
+        {{error, not_active}, NewAlState} ->
+            {{error, not_active}, State#state{ alarmlist_state = NewAlState }}
+    end.
 
 handle_subscribe(Pid, Filter,
                  #state{ event_cb = EvtCB,
