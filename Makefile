@@ -3,22 +3,22 @@
 all: get_deps compile
 
 get_deps:
-	rebar get-deps
+	rebar3 get-deps
 
 doc:
-	rebar doc
+	rebar3 edoc
 
 upd_deps:
-	rebar upd-deps
+	rebar3 upd-deps
 
 compile:
-	rebar compile
+	rebar3 compile
 
 clean:
-	rebar clean
+	rebar3 clean
 
 test:
-	rebar eunit apps=elarm
+	rebar3 eunit apps=elarm
 
 dialyzer: compile
 	dialyzer --plt .plt --no_native ebin
