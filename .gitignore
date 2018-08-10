@@ -2,3 +2,4 @@ deps
 ebin
 .eunit
 .plt
+.rebar3
