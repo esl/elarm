@@ -3,3 +3,5 @@ ebin
 .eunit
 .plt
 .rebar3
+doc
+_build
