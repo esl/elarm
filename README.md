@@ -1,11 +1,18 @@
+<<<<<<< Updated upstream
 Elarm [![Build Status](https://travis-ci.org/esl/elarm.svg?branch=master)](https://travis-ci.org/esl/elarm)
 =====
 
+=======
+# elarm
+
+## Introduction
+
+>>>>>>> Stashed changes
 Elarm is an Alarm Manager for Erlang. It is designed to be easy to include in an
 Erlang based system. Most functions are implemented through plugins so it is
 easy to change the behaviour if necessary.
 
-# Quick Start #
+## Quick Start
 
 Elarm is designed to be part of an Erlang system.
 
@@ -34,7 +41,7 @@ But it can also be started quickly from an Erlang shell:
     {ok,[]}
     >
 
-## Alarms vs Events ##
+## Alarms vs Events
 
 Alarms and Events are often mixed up, but there are some important differences.
 
@@ -47,9 +54,9 @@ in the system. Once an alarm is raised it remains active until the error
 condition connected to the alarm no longer applies. When the error condition is
 removed the alarm is cleared.
 
-## Functions ##
+## Functions
 
-### Alarm List ###
+### Alarm List
 
 Elarm keeps a list of all currently active alarms. It is possible for a Manager
 application to subscribe to all changes in the alarm list.
@@ -60,11 +67,11 @@ to manually clear an alarm. Normally an alarm is cleared by the application that
 raised the alarm, but in some cases that is not done, e.g. if the alarms are
 received as SNMP traps from another system.
 
-### Alarm Log ###
+### Alarm Log
 
 All changes to an alarm are logged in an alarm log.
 
-### Alarm Configuration ###
+### Alarm Configuration
 
 An application raising an alarm should not have to know too much about the alarm
 handling, so when an alarm is raised the application only has to supply a name
@@ -87,9 +94,9 @@ Elarm for a list of alarms that are missing configuration using
 `elarm:get_unconfigured/0,1`. Alarm configuration can be added via
 `elarm:add_configuration/2`.
 
-# Using #
+## Using
 
-## Starting ##
+### Starting
 
 When Elarm is started it starts one instance of the alarm manager, with the name
 `elarm_server`. It is possible to run several alarm managers at once. By putting
@@ -98,7 +105,7 @@ the value a list of tuples `{ServerName, Opts}`, Elarm will start one alarm
 manager for each tuple. It is also possible to manually start a new alarm
 manager using `elarm:start_server(Name, Opts)`.
 
-## Application ##
+### Application
 
 An application wanting to raise an alarm just have to call
 
@@ -114,15 +121,15 @@ ok = elarm:clear(partition_full, "/dev/hda2")
 
 So `Name` and `Entity` uniquely identify an alarm.
 
-## Manager ##
+## Manager
 
-### Get all alarms ###
+### Get all alarms
 
 A Management application can request a list of all currently active alarms by `elarm:get_alarms/1`.
 
-### Subscriptions ###
+### Subscriptions
 
-#### Alarm List ####
+#### Subscribing to an alarm List
 
 To subscribe to all alarm events use `elarm:subscribe(Server, Filter)`. This
 will return a `{Ref, AlarmList}`, where `Ref` is a reference that will be
@@ -145,9 +152,10 @@ one is tried and if one matches then the filter matches.
 The format of the messages are:
 
 * new alarm:
-	```Erlang
-	{elarm, Ref, alarm()}
-	```
+
+```Erlang
+{elarm, Ref, alarm()}
+```
 
 * acknowledged alarm:
 	```Erlang
@@ -174,7 +182,7 @@ The format of the messages are:
 	{elarm, Ref, {add_comment, alarm_id(), alarm_src(), event_id, comment()}}
 	```
 
-#### Alarm Summary ####
+#### Alarm Summary
 
 Alarm Summary gives a summary of the presence or absence of unacknowledged and
 acknowledged alarms of the various severities. This is useful for e.g. show the
@@ -191,23 +199,25 @@ The format of the messages is:
 {elarm, Ref, #alarm_summary{}}
 ```
 
-### Acknowledge Alarms ###
+### Acknowledging Alarms
 
 An alarm has two states, initially it is `new`, to show the user that it is a
 new alarm. When the user has seen the alarm he can acknowledge it using
 `elarm:acknowledge/3`. This will change the alarm state to `acknowledged`, and a
 timestamp and the `UserId` will be added to the alarm.
 
-### Comment Alarms ###
+### Adding comments to Alarms
 
 It is possible to add comments to alarms, e.g. to add notes of troubleshooting
 or corrective actions taken. Each comment will be stored with a timestamp and
 the `UserId` of the user.
 
-### Clear Alarm ###
+### Clearing Alarms
 
 Normally alarms are cleared automatically by the application by calling
 `elarm:clear`, but in some cases it may be necessary to manually clear an alarm,
 this can be done using `elarm:manual_clear/3`.
 
-# Plugins #
+## Plugins
+
+TODO
