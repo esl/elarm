@@ -2,29 +2,24 @@
 
 all: get_deps compile
 
-get_deps:
-	rebar get-deps
-
 doc:
 	rebar doc
 
-upd_deps:
-	rebar upd-deps
-
 compile:
-	rebar compile
+	rebar3 compile
 
 clean:
-	rebar clean
+	rebar3 clean
 
 test:
-	rebar eunit apps=elarm
+	rebar3 eunit apps=elarm
 
 dialyzer: compile
-	dialyzer --plt .plt --no_native ebin
+	rebar3 dialyzer 
+	#--plt .plt --no_native ebin
 
-build_plt:
-	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel eunit ; [ -f ".plt" ]
+#build_plt:
+#	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel eunit ; [ -f ".plt" ]
 
-purge:
-	git ls-files -o --directory | xargs -r rm -r
+#£purge:
+#	git ls-files -o --directory | xargs -r rm -r
