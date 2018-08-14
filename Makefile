@@ -3,7 +3,7 @@
 all: get_deps compile
 
 doc:
-	rebar doc
+	rebar3 edoc
 
 compile:
 	rebar3 compile
