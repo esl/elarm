@@ -16,10 +16,3 @@ test:
 
 dialyzer: compile
 	rebar3 dialyzer 
-	#--plt .plt --no_native ebin
-
-#build_plt:
-#	dialyzer --build_plt --output_plt .plt --apps erts stdlib kernel eunit ; [ -f ".plt" ]
-
-#£purge:
-#	git ls-files -o --directory | xargs -r rm -r
