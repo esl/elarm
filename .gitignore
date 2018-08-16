@@ -2,3 +2,6 @@ deps
 ebin
 .eunit
 .plt
+.*.swp
+_build
+doc
